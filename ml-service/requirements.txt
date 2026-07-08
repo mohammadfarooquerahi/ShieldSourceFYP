@@ -1,0 +1,27 @@
+# =============================================================================
+# Shield-Source ML Microservice — Python Dependencies
+# File   : requirements.txt
+# Purpose: Exact pinned versions ensure reproducible installs across machines.
+#
+# Install with:
+#   pip install -r requirements.txt
+#
+# For production inside Docker, add:
+#   pip install --no-cache-dir -r requirements.txt
+# =============================================================================
+
+# ---- Web framework ----
+flask==3.0.0            # Lightweight WSGI web framework for the REST API
+flask-cors==4.0.0       # Cross-Origin Resource Sharing — lets the React client call this service
+
+# ---- Machine Learning ----
+scikit-learn==1.3.2     # RandomForestClassifier, LabelEncoder, train_test_split
+pandas==2.1.3           # DataFrame manipulation for feature engineering
+numpy==1.26.2           # Numerical arrays used by scikit-learn internally
+
+# ---- Model persistence ----
+joblib==1.3.2           # Save / load trained models efficiently (faster than pickle for numpy arrays)
+
+# ---- Production WSGI server ----
+gunicorn==21.2.0        # Multi-worker HTTP server — replace Flask dev server in production
+                        # Windows users: use waitress instead (gunicorn is Linux/macOS only)

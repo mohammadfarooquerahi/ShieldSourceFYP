@@ -1,0 +1,42 @@
+# ── Node.js ────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Environment Variables (NEVER commit!) ──
+.env
+.env.local
+.env.production
+server/.env
+
+# ── Uploaded Evidence Files ────────────────
+server/uploads/*
+!server/uploads/.gitkeep
+
+# ── Python ─────────────────────────────────
+ml-service/venv/
+ml-service/__pycache__/
+ml-service/**/__pycache__/
+ml-service/**/*.pyc
+ml-service/model/classifier.pkl
+ml-service/model/label_encoder.pkl
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# ── React Build Output ──────────────────────
+client/dist/
+client/build/
+
+# ── OS Files ───────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user

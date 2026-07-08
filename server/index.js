@@ -1,0 +1,56 @@
+// ─────────────────────────────────────────────
+// Shield-Source | Main Server Entry Point
+// Mounts all routes and starts Express server
+// ─────────────────────────────────────────────
+const express = require('express');
+const cors    = require('cors');
+const path    = require('path');
+require('dotenv').config();
+
+const authRoutes     = require('./routes/authRoutes');
+const incidentRoutes = require('./routes/incidentRoutes');
+const expertRoutes   = require('./routes/expertRoutes');
+const adminRoutes    = require('./routes/adminRoutes');
+
+const app = express();
+
+// ── Middleware ──────────────────────────────
+// Allow requests from React frontend (localhost:3000)
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+
+// Parse incoming JSON request bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded evidence files statically
+// NOTE: files are stored outside public root for security
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ── API Routes ──────────────────────────────
+app.use('/api/auth',      authRoutes);      // Register, Login, GetMe
+app.use('/api/incidents', incidentRoutes);  // Create, List, Update incidents
+app.use('/api/expert',    expertRoutes);    // Expert: assigned cases, notes
+app.use('/api/admin',     adminRoutes);     // Admin: users, assign, stats
+
+// ── Health Check ────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'Shield-Source API is running', timestamp: new Date() });
+});
+
+// ── Global Error Handler ─────────────────────
+// Catches any unhandled errors from route handlers
+app.use((err, req, res, next) => {
+  console.error('[ERROR]', err.message);
+  // Never expose raw stack traces to the client
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error'
+  });
+});
+
+// ── Start Server ─────────────────────────────
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🛡️  Shield-Source API running on http://localhost:${PORT}`);
+  console.log(`📁  Uploads stored at: ${path.join(__dirname, 'uploads')}`);
+  console.log(`🤖  ML Service URL: ${process.env.ML_SERVICE_URL}`);
+});
