@@ -161,7 +161,7 @@ export default function AdminDashboard() {
                               <p className="text-white font-semibold text-sm truncate max-w-[180px]">{inc.title}</p>
                               <p className="text-slate-500 text-xs">{new Date(inc.created_at).toLocaleDateString()}</p>
                             </td>
-                            <td className="px-5 py-4"><TypeBadge type={inc.incident_type} /></td>
+                            <td className="px-5 py-4"><TypeBadge type={inc.type} /></td>
                             <td className="px-5 py-4 text-slate-300 text-sm">{inc.reporter_name}</td>
                             <td className="px-5 py-4"><StatusBadge status={inc.status} /></td>
                             <td className="px-5 py-4">

@@ -41,8 +41,8 @@ export default function ExpertDashboard() {
     setSaving(s => ({ ...s, [incidentId]: true }));
     try {
       await api.post('/expert/note', {
-        incident_id:  incidentId,
-        note_content: noteText[incidentId],
+        incidentId:  incidentId,
+        note: noteText[incidentId],
       });
       setFeedback(f => ({ ...f, [incidentId]: '✅ Note saved!' }));
       setNoteText(n => ({ ...n, [incidentId]: '' }));
@@ -57,7 +57,7 @@ export default function ExpertDashboard() {
   // Update case status (in_progress / resolved)
   const handleStatusChange = async (incidentId, newStatus) => {
     try {
-      await api.patch('/expert/status', { incident_id: incidentId, status: newStatus });
+      await api.patch('/expert/status', { incidentId: incidentId, status: newStatus });
       setIncidents(prev =>
         prev.map(inc => inc.id === incidentId ? { ...inc, status: newStatus } : inc)
       );
@@ -132,7 +132,7 @@ export default function ExpertDashboard() {
                 <div>
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <span className="text-slate-500 font-mono text-sm">#{incident.id}</span>
-                    <TypeBadge   type={incident.incident_type} />
+                    <TypeBadge   type={incident.type} />
                     <StatusBadge status={incident.status} />
                   </div>
                   <h2 className="text-xl font-bold text-white">{incident.title}</h2>
@@ -167,36 +167,27 @@ export default function ExpertDashboard() {
                   <div className="flex flex-wrap gap-3">
                     <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 text-sm">
                       <span className="text-slate-400 text-xs block">Threat Type</span>
-                      <span className="text-blue-300 font-bold">{incident.ml_prediction.threat_type}</span>
+                      <span className="text-blue-300 font-bold">{incident.ml_prediction}</span>
                     </div>
-                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg px-3 py-2 text-sm">
-                      <span className="text-slate-400 text-xs block">Confidence</span>
-                      <span className="text-purple-300 font-bold">
-                        {((incident.ml_prediction.confidence_score || 0) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className={`rounded-lg px-3 py-2 text-sm ${severityColor[incident.ml_prediction.severity] || severityColor.low}`}>
+                    <div className={`rounded-lg px-3 py-2 text-sm ${severityColor[incident.severity] || severityColor.low}`}>
                       <span className="text-slate-400 text-xs block">Severity</span>
-                      <span className="font-bold capitalize">{incident.ml_prediction.severity}</span>
+                      <span className="font-bold capitalize">{incident.severity}</span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Evidence Files */}
-              {incident.files && incident.files.length > 0 && (
+              {incident.file_name && (
                 <div className="mb-4">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">📁 Evidence Files</p>
-                  {incident.files.map(file => (
-                    <div key={file.id} className="bg-slate-900/50 rounded-lg p-3 mb-2 flex items-center gap-3 flex-wrap">
-                      <span className="text-slate-300 text-sm font-medium">📄 {file.original_filename}</span>
-                      <span className="text-slate-500 text-xs">({(file.file_size / 1024).toFixed(1)} KB)</span>
-                      <div className="w-full">
-                        <span className="text-xs text-slate-500">SHA-256: </span>
-                        <span className="font-mono text-xs text-green-400 break-all">{file.sha256_hash}</span>
-                      </div>
+                  <div className="bg-slate-900/50 rounded-lg p-3 mb-2 flex items-center gap-3 flex-wrap">
+                    <span className="text-slate-300 text-sm font-medium">📄 {incident.file_name}</span>
+                    <div className="w-full">
+                      <span className="text-xs text-slate-500">SHA-256: </span>
+                      <span className="font-mono text-xs text-green-400 break-all">{incident.file_hash}</span>
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
 
@@ -206,7 +197,7 @@ export default function ExpertDashboard() {
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">📝 Previous Notes</p>
                   {incident.notes.map(note => (
                     <div key={note.id} className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 mb-2">
-                      <p className="text-slate-300 text-sm">{note.note_content}</p>
+                      <p className="text-slate-300 text-sm">{note.note}</p>
                       <p className="text-slate-500 text-xs mt-1">{new Date(note.created_at).toLocaleString()}</p>
                     </div>
                   ))}

@@ -41,6 +41,24 @@ const getAssignedIncidents = async (req, res) => {
       [expertId]
     );
 
+    if (rows.length > 0) {
+      const incidentIds = rows.map(r => r.id);
+      const [notes] = await pool.query(
+        'SELECT id, incident_id, note, created_at FROM incident_notes WHERE incident_id IN (?) ORDER BY created_at ASC',
+        [incidentIds]
+      );
+      
+      const notesByIncident = {};
+      notes.forEach(n => {
+        if (!notesByIncident[n.incident_id]) notesByIncident[n.incident_id] = [];
+        notesByIncident[n.incident_id].push(n);
+      });
+
+      rows.forEach(r => {
+        r.notes = notesByIncident[r.id] || [];
+      });
+    }
+
     return res.status(200).json({ incidents: rows });
   } catch (err) {
     console.error('GetAssignedIncidents error:', err);
