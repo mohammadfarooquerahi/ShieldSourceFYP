@@ -19,11 +19,23 @@ const getAssignedIncidents = async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT
-         i.*,
+         i.id,
+         i.title,
+         i.description,
+         i.incident_type as type,
+         i.status,
+         i.created_at,
+         i.updated_at,
          u.name  AS reporter_name,
-         u.email AS reporter_email
+         u.email AS reporter_email,
+         f.original_filename AS file_name,
+         f.sha256_hash AS file_hash,
+         mlp.threat_type AS ml_prediction,
+         mlp.severity AS severity
        FROM incidents i
        JOIN users u ON i.user_id = u.id
+       LEFT JOIN files f ON f.incident_id = i.id
+       LEFT JOIN ml_predictions mlp ON mlp.file_id = f.id
        WHERE i.assigned_expert_id = ?
        ORDER BY i.created_at DESC`,
       [expertId]
@@ -104,7 +116,7 @@ const updateIncidentStatus = async (req, res) => {
     const { incidentId, status } = req.body;
 
     // ── Validate status value ───────────────────────────────────────────────
-    const VALID_STATUSES = ['in_progress', 'resolved', 'closed'];
+    const VALID_STATUSES = ['in_progress', 'resolved'];
     if (!incidentId || !status) {
       return res.status(400).json({ message: 'incidentId and status are required.' });
     }

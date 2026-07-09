@@ -2,17 +2,28 @@
 // Shield-Source | Login Page
 // Authenticates user and stores JWT token
 // ─────────────────────────────────────────────
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Login() {
-  const [form, setForm]     = useState({ email: '', password: '' });
-  const [error, setError]   = useState('');
+  const [form, setForm]       = useState({ email: '', password: '' });
+  const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
-  const { login }           = useAuth();
-  const navigate            = useNavigate();
+  const { login, user }       = useAuth();   // ← also get user from context
+  const navigate              = useNavigate();
+
+  // ── Navigate AFTER user state is actually updated in context ──────────────
+  // This fixes the race condition where navigate() fires before setUser()
+  // completes, causing ProtectedRoute to see user=null and redirect to /login.
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin')       navigate('/admin',     { replace: true });
+      else if (user.role === 'expert') navigate('/expert',    { replace: true });
+      else                             navigate('/dashboard', { replace: true });
+    }
+  }, [user]); // runs every time user state changes
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,19 +32,15 @@ export default function Login() {
     try {
       // POST /api/auth/login — server returns { token, user }
       const res = await api.post('/auth/login', form);
-      login(res.data.user, res.data.token); // save to context + localStorage
-
-      // Redirect based on user role
-      const role = res.data.user.role;
-      if (role === 'admin')  navigate('/admin');
-      else if (role === 'expert') navigate('/expert');
-      else navigate('/dashboard');
+      // login() calls setUser() — navigate happens in useEffect above
+      login(res.data.user, res.data.token);
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6">

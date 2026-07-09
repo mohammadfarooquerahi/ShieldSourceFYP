@@ -27,78 +27,87 @@ require('dotenv').config();
  */
 const createIncident = async (req, res) => {
   try {
-    const { title, description, severity } = req.body;
-    const userId = req.user.id; // Set by authenticate middleware
+    // ── Read fields from multipart form ────────────────────────────────────
+    // Frontend sends: title, type (incident_type), description
+    const { title, description } = req.body;
+    const incident_type = req.body.type || req.body.incident_type || 'hacking';
+    const userId = req.user.id;
 
-    // ── Validate required text fields ───────────────────────────────────────
+    // ── Validate required fields ────────────────────────────────────────────
     if (!title || !description) {
       return res.status(400).json({ message: 'Title and description are required.' });
     }
 
-    const incidentSeverity = severity || 'medium';
-
-    // ── Handle optional file upload ─────────────────────────────────────────
-    let filePath = null;
-    let fileName = null;
-    let fileHash = null;
-
-    if (req.file) {
-      // req.file is populated by multer when a file is uploaded
-      filePath = req.file.path;                      // Absolute path on disk
-      fileName = req.file.originalname;              // Original filename from client
-
-      // Generate SHA-256 fingerprint of the uploaded file
-      // This can be used later to detect if the same file was submitted twice
-      fileHash = await generateFileHash(filePath);
-    }
-
-    // ── Call ML Microservice ────────────────────────────────────────────────
-    // The ML service analyzes the incident title + description and predicts
-    // what type of attack this might be (e.g., DDoS, Phishing, Malware).
-    // We use a timeout so a slow ML service won't hang the entire request.
-    let mlPrediction = 'Unknown';
-
-    try {
-      const mlResponse = await axios.post(
-        `${process.env.ML_SERVICE_URL}/analyze`,
-        { title, description },
-        { timeout: 10000 } // 10-second timeout — ML inference can be slow
-      );
-
-      // Expect { prediction: "DDoS" } or { label: "Phishing" } from the ML service
-      mlPrediction = mlResponse.data.prediction
-        || mlResponse.data.label
-        || 'Unknown';
-    } catch (mlErr) {
-      // If ML service is down, we still save the incident — just mark prediction unknown
-      // This makes the system resilient: core functionality doesn't fail if ML is offline
-      console.warn('ML service unavailable or timed out:', mlErr.message);
-      mlPrediction = 'ML Service Unavailable';
-    }
-
-    // ── Save incident to database ───────────────────────────────────────────
+    // ── 1. Insert incident into incidents table ─────────────────────────────
+    // Schema: id, user_id, title, description, incident_type, status, assigned_expert_id
     const [result] = await pool.query(
-      `INSERT INTO incidents
-         (user_id, title, description, severity, file_path, file_name, file_hash, ml_prediction, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open')`,
-      [userId, title, description, incidentSeverity, filePath, fileName, fileHash, mlPrediction]
+      `INSERT INTO incidents (user_id, title, description, incident_type, status)
+       VALUES (?, ?, ?, ?, 'open')`,
+      [userId, title, description, incident_type]
     );
+    const incidentId = result.insertId;
 
-    // ── Fetch the newly created record to return it ─────────────────────────
+    // ── 2. Handle file upload → insert into files table ─────────────────────
+    let fileRecord = null;
+    if (req.file) {
+      // Generate SHA-256 hash for forensic integrity
+      const sha256Hash = await generateFileHash(req.file.path);
+
+      const [fileResult] = await pool.query(
+        `INSERT INTO files (incident_id, original_filename, stored_filename, sha256_hash, file_size)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          incidentId,
+          req.file.originalname,          // Original name from client
+          req.file.filename,              // Stored name (timestamp-prefixed)
+          sha256Hash,                     // SHA-256 fingerprint
+          req.file.size                   // File size in bytes
+        ]
+      );
+      fileRecord = { id: fileResult.insertId, sha256_hash: sha256Hash };
+
+      // ── 3. Call ML service to classify the uploaded file ─────────────────
+      try {
+        const mlResponse = await axios.post(
+          `${process.env.ML_SERVICE_URL}/analyze`,
+          { file_path: req.file.path, file_id: fileRecord.id },
+          { timeout: 10000 }
+        );
+
+        // ── 4. Save ML result into ml_predictions table ─────────────────────
+        await pool.query(
+          `INSERT INTO ml_predictions (file_id, threat_type, confidence_score, severity)
+           VALUES (?, ?, ?, ?)`,
+          [
+            fileRecord.id,
+            mlResponse.data.threat_type   || 'Unknown',
+            mlResponse.data.confidence_score || 0.0,
+            mlResponse.data.severity      || 'low'
+          ]
+        );
+      } catch (mlErr) {
+        // ML failure is non-fatal — incident is still saved
+        console.warn('ML service unavailable:', mlErr.message);
+      }
+    }
+
+    // ── 5. Return the created incident ──────────────────────────────────────
     const [rows] = await pool.query(
       'SELECT * FROM incidents WHERE id = ?',
-      [result.insertId]
+      [incidentId]
     );
 
     return res.status(201).json({
       message: 'Incident reported successfully.',
       incident: rows[0]
     });
+
   } catch (err) {
     console.error('CreateIncident error:', err);
-    return res.status(500).json({ message: 'Server error creating incident.' });
+    return res.status(500).json({ message: err.message || 'Server error creating incident.' });
   }
 };
+
 
 // ── GET CURRENT USER'S INCIDENTS ───────────────────────────────────────────────
 
@@ -112,9 +121,23 @@ const getUserIncidents = async (req, res) => {
     const userId = req.user.id;
 
     const [rows] = await pool.query(
-      `SELECT i.*, u.name AS assigned_expert_name
+      `SELECT
+         i.id,
+         i.title,
+         i.description,
+         i.incident_type as type,
+         i.status,
+         i.created_at,
+         i.updated_at,
+         u.name AS assigned_expert_name,
+         f.original_filename AS file_name,
+         f.sha256_hash AS file_hash,
+         mlp.threat_type AS ml_prediction,
+         mlp.severity AS severity
        FROM incidents i
        LEFT JOIN users u ON i.assigned_expert_id = u.id
+       LEFT JOIN files f ON f.incident_id = i.id
+       LEFT JOIN ml_predictions mlp ON mlp.file_id = f.id
        WHERE i.user_id = ?
        ORDER BY i.created_at DESC`,
       [userId]

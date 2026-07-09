@@ -27,7 +27,7 @@ export default function ExpertDashboard() {
     try {
       setLoading(true);
       const res = await api.get('/expert/assigned');
-      setIncidents(res.data);
+      setIncidents(res.data?.incidents || []);
     } catch (err) {
       setError('Failed to load assigned cases.');
     } finally {
@@ -84,7 +84,7 @@ export default function ExpertDashboard() {
       <Sidebar />
 
       {/* ── Main Content ── */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 ml-64 p-8 overflow-y-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-white mb-1">Expert Dashboard</h1>

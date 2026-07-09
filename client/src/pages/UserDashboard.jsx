@@ -310,7 +310,7 @@ export default function UserDashboard() {
                 </thead>
                 <tbody>
                   {filteredIncidents.map((incident) => (
-                    <tr key={incident._id} className="table-row-dark">
+                    <tr key={incident.id} className="table-row-dark">
                       <td className="px-6 py-4">
                         <p className="text-sm font-semibold text-white truncate max-w-[200px]">{incident.title}</p>
                         <p className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">{incident.description?.slice(0, 60)}...</p>

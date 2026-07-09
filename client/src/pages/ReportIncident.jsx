@@ -118,7 +118,7 @@ export default function ReportIncident() {
       formData.append('severity', form.severity);
       formData.append('description', form.description);
       if (file) {
-        formData.append('file', file);
+        formData.append('evidence', file);   // ← must match upload.single('evidence') on backend
         formData.append('sha256Hash', fileHash);
       }
 

@@ -34,10 +34,10 @@ export default function AdminDashboard() {
         api.get('/admin/users'),
       ]);
       setStats(statsRes.data);
-      setIncidents(incRes.data);
-      setUsers(usersRes.data);
+      setIncidents(incRes.data?.incidents || []);
+      setUsers(usersRes.data?.users || []);
       // Filter only experts from users list (for assignment dropdown)
-      setExperts(usersRes.data.filter(u => u.role === 'expert'));
+      setExperts((usersRes.data?.users || []).filter(u => u.role === 'expert'));
     } catch (err) {
       setError('Failed to load admin data.');
     } finally {
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
     if (!expertId) return;
     setAssigning(a => ({ ...a, [incidentId]: true }));
     try {
-      await api.post('/admin/assign', { incident_id: incidentId, expert_id: expertId });
+      await api.post('/admin/assign', { incidentId, expertId });
       const expertName = experts.find(e => e.id === parseInt(expertId))?.name || 'Expert';
       setFeedback(f => ({ ...f, [incidentId]: `✅ Assigned to ${expertName}` }));
       // Update local state to reflect assignment
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#0f172a] flex">
       <Sidebar />
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 ml-64 p-8 overflow-y-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-white mb-1">⚙️ Admin Control Panel</h1>

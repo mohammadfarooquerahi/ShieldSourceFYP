@@ -50,12 +50,12 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // ── Determine role ──────────────────────────────────────────────────────
-    // Public registration only allows 'user'. Role escalation is admin-only.
-    const userRole = role === 'expert' || role === 'admin' ? 'user' : (role || 'user');
+    // Allow 'user' and 'expert' registration. Restrict 'admin' creation.
+    const userRole = role === 'admin' ? 'user' : (role || 'user');
 
     // ── Insert into database ────────────────────────────────────────────────
     const [result] = await pool.query(
-      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+      'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
       [name, email, hashedPassword, userRole]
     );
 
@@ -95,7 +95,7 @@ const login = async (req, res) => {
 
     // ── Find user by email ──────────────────────────────────────────────────
     const [rows] = await pool.query(
-      'SELECT id, name, email, password, role FROM users WHERE email = ?',
+      'SELECT id, name, email, password_hash, role FROM users WHERE email = ?',
       [email]
     );
 
@@ -108,7 +108,7 @@ const login = async (req, res) => {
 
     // ── Compare password with stored hash ───────────────────────────────────
     // bcrypt.compare handles the salt extraction automatically
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }

@@ -41,11 +41,8 @@ const getAllIncidentsAdmin = async (req, res) => {
          i.id,
          i.title,
          i.description,
-         i.severity,
+         i.incident_type as type,
          i.status,
-         i.ml_prediction,
-         i.file_name,
-         i.file_hash,
          i.created_at,
          i.updated_at,
          reporter.id    AS reporter_id,
@@ -53,10 +50,16 @@ const getAllIncidentsAdmin = async (req, res) => {
          reporter.email AS reporter_email,
          expert.id      AS expert_id,
          expert.name    AS expert_name,
-         expert.email   AS expert_email
+         expert.email   AS expert_email,
+         f.original_filename AS file_name,
+         f.sha256_hash AS file_hash,
+         mlp.threat_type AS ml_prediction,
+         mlp.severity AS severity
        FROM incidents i
        LEFT JOIN users reporter ON i.user_id = reporter.id
        LEFT JOIN users expert   ON i.assigned_expert_id = expert.id
+       LEFT JOIN files f        ON f.incident_id = i.id
+       LEFT JOIN ml_predictions mlp ON mlp.file_id = f.id
        ORDER BY i.created_at DESC`
     );
 
@@ -106,11 +109,11 @@ const assignExpert = async (req, res) => {
     }
 
     // ── Perform the assignment ─────────────────────────────────────────────
-    // CASE expression: only change 'open' to 'assigned'; keep other statuses
+    // CASE expression: only change 'open' to 'in_progress'; keep other statuses
     await pool.query(
       `UPDATE incidents
        SET assigned_expert_id = ?,
-           status = CASE WHEN status = 'open' THEN 'assigned' ELSE status END,
+           status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END,
            updated_at = NOW()
        WHERE id = ?`,
       [expertId, incidentId]
@@ -142,50 +145,16 @@ const assignExpert = async (req, res) => {
  */
 const getStats = async (req, res) => {
   try {
-    // ── User counts by role ─────────────────────────────────────────────────
-    const [userStats] = await pool.query(
-      `SELECT role, COUNT(*) AS count
-       FROM users
-       GROUP BY role`
-    );
-
-    // ── Incident counts by status ───────────────────────────────────────────
-    const [statusStats] = await pool.query(
-      `SELECT status, COUNT(*) AS count
-       FROM incidents
-       GROUP BY status`
-    );
-
-    // ── Incident counts by severity ─────────────────────────────────────────
-    const [severityStats] = await pool.query(
-      `SELECT severity, COUNT(*) AS count
-       FROM incidents
-       GROUP BY severity`
-    );
-
-    // ── Incident counts by ML prediction ───────────────────────────────────
-    const [mlStats] = await pool.query(
-      `SELECT ml_prediction, COUNT(*) AS count
-       FROM incidents
-       GROUP BY ml_prediction
-       ORDER BY count DESC`
-    );
-
-    // ── Overall totals ──────────────────────────────────────────────────────
-    const [[{ totalUsers }]] = await pool.query(
-      'SELECT COUNT(*) AS totalUsers FROM users'
-    );
-    const [[{ totalIncidents }]] = await pool.query(
-      'SELECT COUNT(*) AS totalIncidents FROM incidents'
-    );
+    const [[{ total_users }]] = await pool.query("SELECT COUNT(*) AS total_users FROM users WHERE role = 'user'");
+    const [[{ total_experts }]] = await pool.query("SELECT COUNT(*) AS total_experts FROM users WHERE role = 'expert'");
+    const [[{ open_cases }]] = await pool.query("SELECT COUNT(*) AS open_cases FROM incidents WHERE status = 'open'");
+    const [[{ resolved_cases }]] = await pool.query("SELECT COUNT(*) AS resolved_cases FROM incidents WHERE status = 'resolved'");
 
     return res.status(200).json({
-      totalUsers,
-      totalIncidents,
-      usersByRole: userStats,
-      incidentsByStatus: statusStats,
-      incidentsBySeverity: severityStats,
-      incidentsByMLPrediction: mlStats
+      total_users,
+      total_experts,
+      open_cases,
+      resolved_cases
     });
   } catch (err) {
     console.error('GetStats error:', err);

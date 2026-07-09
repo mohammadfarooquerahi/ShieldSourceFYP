@@ -15,8 +15,18 @@ const adminRoutes    = require('./routes/adminRoutes');
 const app = express();
 
 // ── Middleware ──────────────────────────────
-// Allow requests from React frontend (localhost:3000)
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+// Allow requests from React frontend on ANY localhost port (3001, 5173, etc.)
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow any localhost origin during development
+    if (!origin || origin.startsWith('http://localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 // Parse incoming JSON request bodies
 app.use(express.json());
