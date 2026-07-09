@@ -294,29 +294,30 @@ def train_and_save_model():
         target_names=le.classes_
     ))
 
+    # ------------------------------------------------------------------
+    # Persist to disk — save FIRST so model is always stored even if
+    # subsequent print statements fail on this terminal encoding
+    # ------------------------------------------------------------------
+    os.makedirs(MODEL_DIR, exist_ok=True)
+
+    joblib.dump(clf, CLASSIFIER_PATH)
+    print(f"\n  Saved classifier   -> {CLASSIFIER_PATH}")
+
+    joblib.dump(le, LABEL_ENCODER_PATH)
+    print(f"  Saved label encoder -> {LABEL_ENCODER_PATH}")
+
     # Feature importance — useful for viva explanation
-    print("      Feature Importances (higher = more influential):")
+    print("\n      Feature Importances (higher = more influential):")
     importance_pairs = sorted(
         zip(FEATURE_COLUMNS, clf.feature_importances_),
         key=lambda x: x[1], reverse=True
     )
     for feat, imp in importance_pairs:
-        bar = '█' * int(imp * 40)
+        bar = '|' * int(imp * 40)
         print(f"        {feat:25s} {imp:.4f}  {bar}")
 
-    # ------------------------------------------------------------------
-    # Persist to disk
-    # ------------------------------------------------------------------
-    os.makedirs(MODEL_DIR, exist_ok=True)
-
-    joblib.dump(clf, CLASSIFIER_PATH)
-    print(f"\n  ✔ Saved classifier   → {CLASSIFIER_PATH}")
-
-    joblib.dump(le, LABEL_ENCODER_PATH)
-    print(f"  ✔ Saved label encoder → {LABEL_ENCODER_PATH}")
-
     print("\n" + "=" * 60)
-    print("Training complete!  Start the Flask API with:")
+    print("Training complete! Start the Flask API with:")
     print("  python app.py")
     print("=" * 60)
 
