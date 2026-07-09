@@ -4,47 +4,33 @@ import Sidebar from '../components/Sidebar.jsx';
 import StatCard from '../components/StatCard.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import TypeBadge from '../components/TypeBadge.jsx';
+import ChatPanel from '../components/ChatPanel.jsx';
 import api from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
-function IncidentDetailModal({ incident, onClose, onRefresh }) {
-  const [replyText, setReplyText]   = useState('');
-  const [sending,   setSending]     = useState(false);
-  const [sendFeedback, setSendFeedback] = useState('');
-
+function IncidentDetailModal({ incident, onClose }) {
   if (!incident) return null;
-
-  const handleSendReply = async () => {
-    if (!replyText.trim()) return;
-    setSending(true);
-    setSendFeedback('');
-    try {
-      await api.post(`/incidents/${incident.id}/note`, {
-        incidentId: incident.id,
-        note: replyText.trim(),
-      });
-      setReplyText('');
-      setSendFeedback('✅ Message sent!');
-      onRefresh(); // Reload incidents to show new message
-    } catch (err) {
-      setSendFeedback('❌ Failed to send. Try again.');
-    } finally {
-      setSending(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="relative z-10 w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden max-h-[92vh] flex flex-col shadow-2xl">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800/80">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800/80 shrink-0">
           <div>
             <h2 className="text-lg font-bold text-white">{incident.title}</h2>
             <div className="flex items-center gap-2 mt-1">
               <StatusBadge status={incident.status} />
               <TypeBadge type={incident.type} />
+              {incident.severity && (
+                <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
+                  incident.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                  incident.severity === 'high'     ? 'bg-orange-500/20 text-orange-400' :
+                  incident.severity === 'medium'   ? 'bg-yellow-500/20 text-yellow-400' :
+                  'bg-green-500/20 text-green-400'
+                }`}>{incident.severity}</span>
+              )}
             </div>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors p-1">
@@ -55,110 +41,51 @@ function IncidentDetailModal({ incident, onClose, onRefresh }) {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
-          {/* Description */}
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Description</p>
-            <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 leading-relaxed">
-              {incident.description}
-            </div>
-          </div>
-
-          {/* Assigned Expert */}
-          {incident.assigned_expert_name && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <span className="text-blue-400 text-sm">🔵 <strong>Assigned Expert:</strong> {incident.assigned_expert_name}</span>
-            </div>
-          )}
-
-          {/* ML Prediction */}
-          {incident.ml_prediction && (
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🤖 AI Threat Analysis</p>
-              <div className="flex gap-3 flex-wrap">
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 text-sm">
-                  <span className="text-slate-400 text-xs block">Threat Type</span>
-                  <span className="text-blue-300 font-bold">{incident.ml_prediction}</span>
-                </div>
-                <div className={`rounded-lg px-3 py-2 text-sm ${
-                  incident.severity === 'critical' ? 'bg-red-500/10 border border-red-500/30 text-red-300' :
-                  incident.severity === 'high'     ? 'bg-orange-500/10 border border-orange-500/30 text-orange-300' :
-                  incident.severity === 'medium'   ? 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-300' :
-                  'bg-green-500/10 border border-green-500/30 text-green-300'
-                }`}>
-                  <span className="text-slate-400 text-xs block">Severity</span>
-                  <span className="font-bold capitalize">{incident.severity}</span>
-                </div>
+          {/* Key info row */}
+          <div className="grid grid-cols-2 gap-3">
+            {incident.assigned_expert_name && (
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 col-span-2">
+                <p className="text-xs text-slate-500 mb-1">Assigned Expert</p>
+                <p className="text-blue-400 font-semibold text-sm">🔵 {incident.assigned_expert_name}</p>
               </div>
-            </div>
-          )}
-
-          {/* File Hash */}
-          {incident.file_hash && (
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🔒 Evidence File Hash (SHA-256)</p>
-              <code className="block text-xs font-mono text-green-400 bg-green-500/5 border border-green-500/20 rounded-lg px-3 py-2.5 break-all">
-                {incident.file_hash}
-              </code>
-            </div>
-          )}
-
-          {/* Communication Thread */}
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">💬 Communication with Expert</p>
-            {incident.notes && incident.notes.length > 0 ? (
-              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                {incident.notes.map(note => {
-                  const isExpert = note.author_role === 'expert' || note.author_role === 'admin';
-                  return (
-                    <div key={note.id} className={`rounded-xl p-3 ${
-                      isExpert
-                        ? 'bg-blue-500/10 border border-blue-500/20 ml-6'
-                        : 'bg-slate-800 border border-slate-700 mr-6'
-                    }`}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs font-bold ${isExpert ? 'text-blue-400' : 'text-amber-400'}`}>
-                          {isExpert ? '🔵 Expert:' : '👤 You:'} {note.author_name}
-                        </span>
-                        <span className="text-slate-600 text-xs">{new Date(note.created_at).toLocaleString()}</span>
-                      </div>
-                      <p className="text-slate-300 text-sm">{note.note}</p>
-                    </div>
-                  );
-                })}
+            )}
+            {incident.ml_prediction && (
+              <div className="p-3 rounded-xl bg-slate-800 border border-slate-700">
+                <p className="text-xs text-slate-500 mb-1">AI Threat Type</p>
+                <p className="text-white font-bold text-sm">{incident.ml_prediction}</p>
               </div>
-            ) : (
-              <p className="text-slate-600 text-sm italic">No messages yet. The expert will post updates here.</p>
+            )}
+            {incident.severity && (
+              <div className="p-3 rounded-xl bg-slate-800 border border-slate-700">
+                <p className="text-xs text-slate-500 mb-1">Severity</p>
+                <p className="font-bold text-sm capitalize">{incident.severity}</p>
+              </div>
+            )}
+            {incident.file_hash && (
+              <div className="col-span-2 p-3 rounded-xl bg-green-500/5 border border-green-500/20">
+                <p className="text-xs text-green-500 font-semibold mb-1">🔒 SHA-256 File Hash</p>
+                <code className="text-xs font-mono text-green-400 break-all">{incident.file_hash}</code>
+              </div>
             )}
           </div>
 
-          {/* Reply Box */}
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">✍️ Send a Message to Expert</p>
-            <textarea
-              rows={3}
-              placeholder="Provide additional details, ask a question, or follow up with the expert..."
-              value={replyText}
-              onChange={e => setReplyText(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm resize-none focus:outline-none focus:border-blue-500 transition-all mb-2"
-            />
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleSendReply}
-                disabled={sending || !replyText.trim()}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-all"
-              >
-                {sending ? '⏳ Sending...' : '📤 Send Message'}
-              </button>
-              {sendFeedback && <span className="text-sm">{sendFeedback}</span>}
-            </div>
+          {/* Description */}
+          <div className="p-4 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 leading-relaxed">
+            {incident.description}
           </div>
+
+          {/* Chat Panel */}
+          <ChatPanel
+            incidentId={incident.id}
+            incidentTitle={incident.title}
+          />
 
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-700 bg-slate-800/50">
+        <div className="px-5 py-3 border-t border-slate-700 bg-slate-800/50 shrink-0">
           <button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-xl text-sm font-semibold transition-all">
             Close
           </button>

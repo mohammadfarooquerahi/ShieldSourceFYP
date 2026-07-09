@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shield-Source Viva Guide — Mohammad Farooq</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* COVER PAGE */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    border-radius: 50%;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+    bottom: -50px; left: -50px;
+    border-radius: 50%;
+  }
+  .cover-badge {
+    background: rgba(239,68,68,0.2);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #f87171;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    position: relative; z-index: 1;
+  }
+  .cover-shield {
+    font-size: 80px;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+  .cover h1 {
+    font-size: 42px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+  .cover h2 {
+    font-size: 18px;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-bottom: 40px;
+    position: relative; z-index: 1;
+  }
+  .cover-info {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+  .cover-info-item {
+    text-align: center;
+  }
+  .cover-info-item .label {
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .cover-info-item .value {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .cover-divider {
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #ef4444, #3b82f6);
+    border-radius: 2px;
+    margin: 30px auto;
+    position: relative; z-index: 1;
+  }
+
+  /* PAGE */
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 50px 60px;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: avoid; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .section-icon.red { background: #fef2f2; }
+  .section-icon.blue { background: #eff6ff; }
+  .section-icon.green { background: #f0fdf4; }
+  .section-icon.purple { background: #faf5ff; }
+  .section-icon.orange { background: #fff7ed; }
+  .section-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+  .section-subtitle { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+  /* QA CARD */
+  .qa-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .qa-question {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .qa-q-badge {
+    background: #ef4444;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .qa-answer {
+    padding: 16px 20px;
+    color: #374151;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  .qa-answer p { margin-bottom: 8px; }
+  .qa-answer p:last-child { margin-bottom: 0; }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  th {
+    background: #1e293b;
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #374151;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:last-child td { border-bottom: none; }
+  .check { color: #22c55e; font-weight: 700; }
+  .badge-red { background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .badge-orange { background: #fff7ed; color: #ea580c; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .badge-yellow { background: #fefce8; color: #ca8a04; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .badge-blue { background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+  .code-block .comment { color: #64748b; }
+  .code-block .keyword { color: #f87171; }
+  .code-block .string { color: #86efac; }
+  .code-block .number { color: #fbbf24; }
+  .code-block .highlight { color: #38bdf8; font-weight: 600; }
+
+  /* FLOW BOX */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 0;
+    position: relative;
+  }
+  .flow-step::before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    top: 44px;
+    bottom: -12px;
+    width: 2px;
+    background: #e2e8f0;
+  }
+  .flow-step:last-child::before { display: none; }
+  .flow-num {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+  }
+  .flow-content { flex: 1; }
+  .flow-title { font-weight: 700; color: #0f172a; font-size: 14px; margin-bottom: 4px; }
+  .flow-desc { color: #64748b; font-size: 13px; }
+
+  /* FEATURE BOX */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .feature-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .feature-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3b82f6;
+    margin-bottom: 4px;
+  }
+  .feature-desc { font-size: 12px; color: #64748b; }
+  .feature-attack { font-size: 11px; color: #ef4444; font-weight: 600; margin-top: 4px; }
+
+  /* ALERT BOXES */
+  .alert {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .alert-content {}
+  .alert-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .alert-text { font-size: 13px; line-height: 1.6; }
+  .alert-tip { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .alert-tip .alert-title { color: #15803d; }
+  .alert-tip .alert-text { color: #166534; }
+  .alert-important { background: #fef2f2; border: 1px solid #fecaca; }
+  .alert-important .alert-title { color: #dc2626; }
+  .alert-important .alert-text { color: #991b1b; }
+  .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .alert-info .alert-title { color: #1d4ed8; }
+  .alert-info .alert-text { color: #1e40af; }
+
+  /* ARCHITECTURE */
+  .arch-box {
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 24px;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+    margin: 16px 0;
+  }
+  .arch-layer {
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .arch-layer-title {
+    font-weight: 600;
+    color: #38bdf8;
+    margin-bottom: 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .arch-arrow {
+    text-align: center;
+    color: #475569;
+    margin: 4px 0;
+    font-size: 16px;
+  }
+  .arch-detail { color: #94a3b8; font-size: 11px; }
+
+  /* TERMS */
+  .term-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .term-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #3b82f6;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+  }
+  .term-name { font-weight: 700; color: #1e293b; font-size: 13px; margin-bottom: 4px; }
+  .term-def { font-size: 12px; color: #64748b; }
+
+  /* DEMO STEPS */
+  .demo-step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .demo-num {
+    background: #1e293b;
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .demo-content { flex: 1; }
+  .demo-title { font-weight: 600; color: #0f172a; font-size: 13px; }
+  .demo-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .demo-say {
+    background: #f0fdf4;
+    border-left: 3px solid #22c55e;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 6px;
+    font-style: italic;
+    color: #166534;
+    font-size: 12px;
+  }
+
+  @media print {
+    body { background: white; }
+    .page { padding: 30px 40px; }
+    .cover { min-height: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ COVER PAGE -->
+<div class="cover">
+  <div class="cover-badge">🎓 PEASMESH AI Assignment — Option A</div>
+  <div class="cover-shield">🛡️</div>
+  <h1>Shield-Source</h1>
+  <h2>An AI-Driven Cyber Incident Response System</h2>
+  <div class="cover-divider"></div>
+  <div class="cover-info">
+    <div class="cover-info-item">
+      <div class="label">Student</div>
+      <div class="value">Mohammad Farooq Uerahi</div>
+    </div>
+    <div class="cover-info-item">
+      <div class="label">Student ID</div>
+      <div class="value">2023/CSM/78</div>
+    </div>
+    <div class="cover-info-item">
+      <div class="label">AI Feature</div>
+      <div class="value">Random Forest Classifier</div>
+    </div>
+    <div class="cover-info-item">
+      <div class="label">Model Accuracy</div>
+      <div class="value">100% on Test Set</div>
+    </div>
+  </div>
+  <div class="cover-divider"></div>
+  <p style="color:#475569; font-size:13px; position:relative; z-index:1;">Complete Viva Preparation Guide — Questions, Answers & Demo Script</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ PAGE 1: REQUIREMENT VS BUILD -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-icon red">📋</div>
+    <div>
+      <div class="section-title">Assignment Requirement vs What You Built</div>
+      <div class="section-subtitle">PEASMESH Option A — Implement AI/ML feature in FYP</div>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Assignment Says</th>
+      <th>Your Project Does</th>
+      <th>✓</th>
+    </tr>
+    <tr>
+      <td>Implement AI/ML anomaly detection</td>
+      <td>Random Forest Classifier trained with 700 samples, 5 threat classes</td>
+      <td class="check">✅</td>
+    </tr>
+    <tr>
+      <td>Analyze server log files uploaded by users</td>
+      <td>Log parser reads uploaded file, extracts 7 numerical features</td>
+      <td class="check">✅</td>
+    </tr>
+    <tr>
+      <td>Flag SQL Injections, Brute Force, DDoS</td>
+      <td>Model classifies into: Normal, SQL_Injection, Brute_Force, DDoS, Path_Traversal</td>
+      <td class="check">✅</td>
+    </tr>
+    <tr>
+      <td>Categorize severity of cyber incident</td>
+      <td>Maps each threat → Low / Medium / High / Critical severity</td>
+      <td class="check">✅</td>
+    </tr>
+    <tr>
+      <td>Highlight threat indicators for expert</td>
+      <td>Expert Dashboard shows threat type + severity + confidence score</td>
+      <td class="check">✅</td>
+    </tr>
+    <tr>
+      <td>Reduce manual investigation time</td>
+      <td>Instant AI classification in &lt;1 second — no manual log reading needed</td>
+      <td class="check">✅</td>
+    </tr>
+    <tr>
+      <td>Demoable in viva</td>
+      <td>4 sample log files ready: SQL Injection, Brute Force, DDoS, Normal</td>
+      <td class="check">✅</td>
+    </tr>
+  </table>
+
+  <div class="section-header" style="margin-top:32px">
+    <div class="section-icon blue">🔄</div>
+    <div>
+      <div class="section-title">Complete System Flow</div>
+      <div class="section-subtitle">How an incident goes from report to resolution</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">User Reports Incident</div>
+        <div class="flow-desc">Logs in → fills title, type, description → uploads server log file (e.g. sql_injection_attack.log) as evidence</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">Node.js Secures the File</div>
+        <div class="flow-desc">Saves file to disk, computes SHA-256 hash for forensic integrity, stores in MySQL files table</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">ML Microservice Analyzes the Log</div>
+        <div class="flow-desc">Node.js calls Python Flask API at localhost:8000/analyze → log parser extracts 7 features → Random Forest predicts threat</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">Result Saved to Database</div>
+        <div class="flow-desc">threat_type, confidence_score, severity stored in ml_predictions table linked to the file</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">5</div>
+      <div class="flow-content">
+        <div class="flow-title">Admin Assigns Cybersecurity Expert</div>
+        <div class="flow-desc">Admin sees incident with AI classification → selects expert from dropdown → status changes to in_progress</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">6</div>
+      <div class="flow-content">
+        <div class="flow-title">Expert Investigates</div>
+        <div class="flow-desc">Downloads evidence file, reads AI analysis, adds investigation notes, communicates with user via chat thread</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">7</div>
+      <div class="flow-content">
+        <div class="flow-title">Case Resolved</div>
+        <div class="flow-desc">Expert marks status as "Resolved" → user sees update on their dashboard</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ PAGE 2: VIVA Q&A PART 1 -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-icon purple">❓</div>
+    <div>
+      <div class="section-title">Viva Questions & Model Answers</div>
+      <div class="section-subtitle">Read these out loud — practice until fluent</div>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q1</span>
+      What AI/ML technique did you use and why did you choose it?
+    </div>
+    <div class="qa-answer">
+      <p>I used a <strong>Random Forest Classifier</strong> — an ensemble learning method that builds 200 independent decision trees and takes a majority vote.</p>
+      <p>I chose Random Forest over alternatives like SVM or Neural Networks for three reasons:</p>
+      <p>① It works well with small tabular datasets — my feature vector is only 7 numbers<br>
+      ② It provides probability scores via predict_proba() — this gives me the confidence percentage shown to the expert<br>
+      ③ It is resistant to overfitting through bootstrap aggregation — each tree trains on a random subset of data</p>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q2</span>
+      What dataset did you use to train the model?
+    </div>
+    <div class="qa-answer">
+      <p>I used <strong>synthetic training data</strong> generated programmatically in train_model.py. I generated 700 labeled samples — 140 per class — with realistic statistical ranges based on real attack documentation.</p>
+      <p><strong>Why synthetic?</strong> Real attack log datasets like CICIDS2017 are gigabytes in size, many require institutional access, and real logs contain PII — real IP addresses and real usernames. Using them would raise ethical and legal concerns. Synthetic data is a standard academic approach for demonstrating ML pipelines while keeping the dataset controllable and explainable.</p>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q3</span>
+      What accuracy did your model achieve?
+    </div>
+    <div class="qa-answer">
+      <p>The model achieved <strong>100% accuracy</strong> on the test set — 140 test samples with perfect precision, recall, and F1-score for all 5 classes.</p>
+      <p>This is expected with synthetic data because the class boundaries are well-defined. For example, a log with 50 SQL keywords will never be confused with a normal log that has 0-2. In a real-world deployment, accuracy would typically be 85-95% due to noise and mixed patterns in real logs. For my FYP, synthetic data proves the full pipeline works correctly end-to-end.</p>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q4</span>
+      What are the 7 features? Why these specific ones?
+    </div>
+    <div class="qa-answer">
+      <p>The 7 features were chosen based on known cybersecurity attack signatures:</p>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-name">total_lines</div>
+      <div class="feature-desc">Total line count in the log file</div>
+      <div class="feature-attack">Baseline volume indicator</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-name">error_lines</div>
+      <div class="feature-desc">Lines containing ERROR, FATAL, CRITICAL</div>
+      <div class="feature-attack">Exploitation attempts generate errors</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-name">sql_keywords</div>
+      <div class="feature-desc">Lines with SELECT, UNION, DROP, INSERT</div>
+      <div class="feature-attack">→ Detects SQL Injection attacks</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-name">auth_failures</div>
+      <div class="feature-desc">Lines with "failed login", "unauthorized"</div>
+      <div class="feature-attack">→ Detects Brute Force attacks</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-name">unique_ips</div>
+      <div class="feature-desc">Count of distinct IPv4 addresses</div>
+      <div class="feature-attack">→ Many IPs = DDoS botnet</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-name">high_freq_ip_lines</div>
+      <div class="feature-desc">Lines from IPs appearing 10+ times</div>
+      <div class="feature-attack">→ Single-source DDoS flood</div>
+    </div>
+    <div class="feature-card" style="grid-column: span 2;">
+      <div class="feature-name">path_traversal</div>
+      <div class="feature-desc">Lines with ../ or ..\ sequences in URL requests</div>
+      <div class="feature-attack">→ Detects Directory Traversal attacks</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ PAGE 3: Q&A PART 2 -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-icon purple">❓</div>
+    <div>
+      <div class="section-title">More Viva Questions & Answers</div>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q5</span>
+      What are the 5 threat classes and severity mapping?
+    </div>
+    <div class="qa-answer">
+      <table style="margin:0;">
+        <tr><th>Threat Class</th><th>Severity</th><th>Real-World Meaning</th></tr>
+        <tr><td>Normal</td><td><span class="badge-green">Low</span></td><td>Regular web traffic — no attack detected</td></tr>
+        <tr><td>Brute_Force</td><td><span class="badge-yellow">Medium</span></td><td>Automated password guessing / credential stuffing</td></tr>
+        <tr><td>SQL_Injection</td><td><span class="badge-red">High</span></td><td>Attacker extracting or destroying database contents</td></tr>
+        <tr><td>Path_Traversal</td><td><span class="badge-red">High</span></td><td>Attacker reading system files like /etc/passwd</td></tr>
+        <tr><td>DDoS</td><td><span class="badge-orange">Critical</span></td><td>Overwhelming server to cause complete downtime</td></tr>
+      </table>
+      <p style="margin-top:10px;">DDoS is Critical because it causes immediate service unavailability — the most damaging in terms of business impact.</p>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q6</span>
+      How does the ML service connect to the main application?
+    </div>
+    <div class="qa-answer">
+      <p>The system uses a <strong>microservice architecture</strong> with 3 separate services running simultaneously:</p>
+      <p>① <strong>React Frontend</strong> (port 3000) — what the user sees in the browser<br>
+      ② <strong>Node.js API</strong> (port 5000) — handles authentication, database, business logic<br>
+      ③ <strong>Python Flask ML Service</strong> (port 8000) — handles AI classification only</p>
+      <p>When a user uploads a log file, Node.js saves it to disk, then makes an HTTP POST request to <strong>localhost:8000/analyze</strong> with the file path. Flask reads the file, extracts 7 features, runs the Random Forest model, and returns a JSON result. Node.js saves the result to the ml_predictions table in MySQL.</p>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q7</span>
+      What is SHA-256 and why do you use it?
+    </div>
+    <div class="qa-answer">
+      <p>SHA-256 is a cryptographic hash function that produces a unique 64-character fingerprint for any file. Even changing one character completely changes the hash.</p>
+      <p>In cybersecurity forensics, <strong>file integrity is critical</strong>. If a log file is submitted as evidence, we must prove it hasn't been modified. By storing the SHA-256 hash at upload time, anyone can later re-hash the file and confirm it matches — proving the evidence is authentic and unmodified. This is the same technique used by law enforcement in digital forensics.</p>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q8</span>
+      What is the role of each user in the system?
+    </div>
+    <div class="qa-answer">
+      <table style="margin:0;">
+        <tr><th>Role</th><th>What They Can Do</th></tr>
+        <tr><td><strong>👤 User</strong></td><td>Report incidents, upload log files, view AI results, message the expert</td></tr>
+        <tr><td><strong>⚙️ Admin</strong></td><td>View all incidents with AI classification, assign/reassign cybersecurity experts</td></tr>
+        <tr><td><strong>🔍 Expert</strong></td><td>View assigned cases, download evidence files, see AI analysis, add notes, update status, reply to user</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-question">
+      <span class="qa-q-badge">Q9</span>
+      What database tables does your system use?
+    </div>
+    <div class="qa-answer">
+      <table style="margin:0;">
+        <tr><th>Table</th><th>Purpose</th></tr>
+        <tr><td><code>users</code></td><td>Stores user accounts with role (user/expert/admin) and bcrypt password</td></tr>
+        <tr><td><code>incidents</code></td><td>Stores each reported incident with status ENUM (open/in_progress/resolved)</td></tr>
+        <tr><td><code>files</code></td><td>Stores uploaded file info including SHA-256 hash and stored filename</td></tr>
+        <tr><td><code>ml_predictions</code></td><td>Stores AI results: threat_type, confidence_score, severity per file</td></tr>
+        <tr><td><code>incident_notes</code></td><td>Stores chat messages between user and expert for each incident</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ PAGE 4: ARCHITECTURE + DEMO -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-icon blue">🏗️</div>
+    <div>
+      <div class="section-title">System Architecture</div>
+      <div class="section-subtitle">3-tier microservice architecture</div>
+    </div>
+  </div>
+
+  <div class="arch-box">
+    <div class="arch-layer">
+      <div class="arch-layer-title">⚛️ Frontend — React.js + TailwindCSS (Port 3000)</div>
+      <div class="arch-detail">Pages: Home | Login | Register | User Dashboard | Report Incident | Expert Dashboard | Admin Dashboard</div>
+    </div>
+    <div class="arch-arrow">↕ HTTP API Calls (axios)</div>
+    <div class="arch-layer">
+      <div class="arch-layer-title">⚙️ Backend — Node.js + Express.js (Port 5000)</div>
+      <div class="arch-detail">Routes: /api/auth  /api/incidents  /api/expert  /api/admin</div>
+      <div class="arch-detail">Features: JWT Authentication | Multer File Upload | bcrypt Passwords | MySQL Queries</div>
+    </div>
+    <div class="arch-arrow">↕ MySQL Queries</div>
+    <div class="arch-layer">
+      <div class="arch-layer-title">🗄️ Database — MySQL (shield_source)</div>
+      <div class="arch-detail">Tables: users | incidents | files | ml_predictions | incident_notes</div>
+    </div>
+    <div class="arch-arrow">↕ HTTP POST /analyze (axios)</div>
+    <div class="arch-layer">
+      <div class="arch-layer-title">🤖 ML Microservice — Python Flask (Port 8000)</div>
+      <div class="arch-detail">log_parser.py → extracts 7 features from log file</div>
+      <div class="arch-detail">Random Forest (200 trees) → predicts threat_type + confidence_score + severity</div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:32px">
+    <div class="section-icon green">🎬</div>
+    <div>
+      <div class="section-title">Live Demo Script for Viva</div>
+      <div class="section-subtitle">Do exactly this sequence during demonstration</div>
+    </div>
+  </div>
+
+  <div class="alert alert-important">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <div class="alert-title">Start These 3 Terminals BEFORE Your Viva</div>
+      <div class="alert-text">
+        Terminal 1: <code>cd d:\FYP99\shield-source\ml-service &amp;&amp; python app.py</code><br>
+        Terminal 2: <code>cd d:\FYP99\shield-source\server &amp;&amp; node index.js</code><br>
+        Terminal 3: <code>cd d:\FYP99\shield-source\client &amp;&amp; npm run dev</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-step">
+    <div class="demo-num">1</div>
+    <div class="demo-content">
+      <div class="demo-title">Open localhost:3000 — Show the Landing Page</div>
+      <div class="demo-desc">Show the cybersecurity theme, the Shield logo, and PANIC BUTTON</div>
+      <div class="demo-say">"This is the Shield-Source landing page. Users can report a cyber incident by clicking the panic button."</div>
+    </div>
+  </div>
+
+  <div class="demo-step">
+    <div class="demo-num">2</div>
+    <div class="demo-content">
+      <div class="demo-title">Login as User → Report Incident → Upload sql_injection_attack.log</div>
+      <div class="demo-desc">Fill: Title = "SQL Injection Attack Detected", Type = Hacking</div>
+      <div class="demo-say">"The user uploads the server log file. The system automatically computes a SHA-256 hash for forensic integrity, then sends the file to our Python ML microservice for analysis."</div>
+    </div>
+  </div>
+
+  <div class="demo-step">
+    <div class="demo-num">3</div>
+    <div class="demo-content">
+      <div class="demo-title">Login as Admin → Show the Incident → Assign Expert</div>
+      <div class="demo-desc">Show the AI classification already showing in the table, then assign expert from dropdown</div>
+      <div class="demo-say">"The admin can see the AI has already classified this as SQL Injection with High severity. The admin assigns it to a cybersecurity expert."</div>
+    </div>
+  </div>
+
+  <div class="demo-step">
+    <div class="demo-num">4</div>
+    <div class="demo-content">
+      <div class="demo-title">Login as Expert → Show the ML Analysis Card</div>
+      <div class="demo-desc">Point to: Threat Type = SQL_Injection, Severity = High, Confidence score</div>
+      <div class="demo-say">"The expert sees the AI classification — SQL Injection at High severity. They can download the original evidence file, read the log directly, and add investigation notes."</div>
+    </div>
+  </div>
+
+  <div class="demo-step">
+    <div class="demo-num">5</div>
+    <div class="demo-content">
+      <div class="demo-title">Expert Types a Note → User Sees It</div>
+      <div class="demo-desc">Save a note → login as User → open the incident → show the chat thread</div>
+      <div class="demo-say">"Our system supports two-way communication. The expert's note is immediately visible to the user. The user can also reply — creating a complete audit trail."</div>
+    </div>
+  </div>
+
+  <div class="demo-step">
+    <div class="demo-num">6</div>
+    <div class="demo-content">
+      <div class="demo-title">Upload normal_traffic.log — Show It's Classified as Normal</div>
+      <div class="demo-desc">Repeat the process with the normal log file</div>
+      <div class="demo-say">"To prove the model works both ways — here's normal traffic. The AI correctly identifies it as Normal with Low severity. No false alarm."</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ PAGE 5: KEY TERMS + QUICK REF -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-icon orange">📚</div>
+    <div>
+      <div class="section-title">Key Technical Terms</div>
+      <div class="section-subtitle">Know these definitions confidently</div>
+    </div>
+  </div>
+
+  <div class="term-grid">
+    <div class="term-card">
+      <div class="term-name">Random Forest</div>
+      <div class="term-def">200 decision trees that each vote on the answer — majority vote wins. More trees = more accurate and stable.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">Feature Engineering</div>
+      <div class="term-def">Converting raw log text into 7 numbers that the ML model understands and can learn from.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">Synthetic Data</div>
+      <div class="term-def">Programmatically generated training data with realistic patterns. Used when real data is scarce or contains PII.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">Microservice</div>
+      <div class="term-def">Small, separate service (Python Flask on port 8000) doing ONE specific job — ML prediction only.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">SHA-256</div>
+      <div class="term-def">Cryptographic hash — 64-character fingerprint proving a file hasn't been modified. Standard in digital forensics.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">predict_proba()</div>
+      <div class="term-def">sklearn function returning probability for each class. The max value becomes the confidence score (e.g. 97%).</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">Confidence Score</div>
+      <div class="term-def">How certain the model is in its prediction. 97% = very confident. Stored in ml_predictions table.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">JWT</div>
+      <div class="term-def">JSON Web Token — encrypted login token stored in browser. Sent with every API request to prove identity.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">ENUM (MySQL)</div>
+      <div class="term-def">Column type accepting only specific values: open / in_progress / resolved. Prevents invalid data.</div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">bcrypt</div>
+      <div class="term-def">Password hashing algorithm. Passwords are never stored as plain text — only as a 60-char bcrypt hash.</div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:32px">
+    <div class="section-icon green">⚡</div>
+    <div>
+      <div class="section-title">Quick Reference — Sample Log Results</div>
+      <div class="section-subtitle">What the AI predicts for each test file</div>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Upload This File</th>
+      <th>Key Feature Signal</th>
+      <th>AI Predicts</th>
+      <th>Severity</th>
+    </tr>
+    <tr>
+      <td><code>sql_injection_attack.log</code></td>
+      <td>sql_keywords = 23 (very high)</td>
+      <td><strong>SQL_Injection</strong></td>
+      <td><span class="badge-red">High</span></td>
+    </tr>
+    <tr>
+      <td><code>brute_force_attack.log</code></td>
+      <td>auth_failures = 30 (very high)</td>
+      <td><strong>Brute_Force</strong></td>
+      <td><span class="badge-yellow">Medium</span></td>
+    </tr>
+    <tr>
+      <td><code>ddos_attack.log</code></td>
+      <td>high_freq_ip_lines = 40 (very high)</td>
+      <td><strong>DDoS</strong></td>
+      <td><span class="badge-orange">Critical</span></td>
+    </tr>
+    <tr>
+      <td><code>normal_traffic.log</code></td>
+      <td>All values low and normal</td>
+      <td><strong>Normal</strong></td>
+      <td><span class="badge-green">Low</span></td>
+    </tr>
+  </table>
+
+  <div class="alert alert-tip" style="margin-top: 24px;">
+    <div class="alert-icon">💡</div>
+    <div>
+      <div class="alert-title">One-Sentence Summary for Viva</div>
+      <div class="alert-text">"Shield-Source is an AI-driven cybersecurity platform where users upload server log files, a pre-trained Random Forest Classifier automatically classifies the threat type and severity using 7 engineered features, and cybersecurity experts investigate assigned cases through a real-time communication dashboard — reducing manual investigation time significantly."</div>
+    </div>
+  </div>
+
+  <div class="alert alert-info">
+    <div class="alert-icon">📁</div>
+    <div>
+      <div class="alert-title">Sample Log Files Location</div>
+      <div class="alert-text">All 4 test files are saved at: <code>d:\FYP99\shield-source\ml-service\sample-logs\</code><br>
+      Copy them to your Desktop before viva for easy access during demo.</div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:40px; padding: 20px; border-top: 1px solid #e2e8f0;">
+    <p style="color:#94a3b8; font-size:12px;">🛡️ Shield-Source FYP — Mohammad Farooq Uerahi (2023/CSM/78)</p>
+    <p style="color:#94a3b8; font-size:12px; margin-top:4px;">GitHub: github.com/mohammadfarooquerahi/ShieldSourceFYP</p>
+  </div>
+</div>
+
+</body>
+</html>

@@ -11,6 +11,7 @@ const authRoutes     = require('./routes/authRoutes');
 const incidentRoutes = require('./routes/incidentRoutes');
 const expertRoutes   = require('./routes/expertRoutes');
 const adminRoutes    = require('./routes/adminRoutes');
+const chatRoutes     = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -37,10 +38,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── API Routes ──────────────────────────────
-app.use('/api/auth',      authRoutes);      // Register, Login, GetMe
-app.use('/api/incidents', incidentRoutes);  // Create, List, Update incidents
-app.use('/api/expert',    expertRoutes);    // Expert: assigned cases, notes
-app.use('/api/admin',     adminRoutes);     // Admin: users, assign, stats
+app.use('/api/auth',      authRoutes);
+app.use('/api/incidents', incidentRoutes);
+app.use('/api/expert',    expertRoutes);
+app.use('/api/admin',     adminRoutes);
+app.use('/api/chat',      chatRoutes);     // Two-way chat per incident
 
 // ── Health Check ────────────────────────────
 app.get('/api/health', (req, res) => {

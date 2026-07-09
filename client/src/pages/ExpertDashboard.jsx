@@ -8,6 +8,7 @@ import Sidebar     from '../components/Sidebar';
 import StatusBadge from '../components/StatusBadge';
 import TypeBadge   from '../components/TypeBadge';
 import StatCard    from '../components/StatCard';
+import ChatPanel   from '../components/ChatPanel';
 import api         from '../services/api';
 
 export default function ExpertDashboard() {
@@ -204,60 +205,15 @@ export default function ExpertDashboard() {
                 </div>
               )}
 
-              {/* Communication Thread */}
-              <div className="mb-4">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">💬 Communication Thread</p>
-                {incident.notes && incident.notes.length > 0 ? (
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {incident.notes.map(note => {
-                      const isExpert = note.author_role === 'expert' || note.author_role === 'admin';
-                      return (
-                        <div key={note.id} className={`rounded-xl p-3 ${
-                          isExpert
-                            ? 'bg-blue-500/10 border border-blue-500/20 ml-4'
-                            : 'bg-slate-700/40 border border-slate-600/30 mr-4'
-                        }`}>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-xs font-bold ${
-                              isExpert ? 'text-blue-400' : 'text-amber-400'
-                            }`}>
-                              {isExpert ? '🔵 Expert:' : '👤 Client:'} {note.author_name}
-                            </span>
-                            <span className="text-slate-600 text-xs">{new Date(note.created_at).toLocaleString()}</span>
-                          </div>
-                          <p className="text-slate-300 text-sm">{note.note}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-slate-600 text-sm italic">No messages yet.</p>
-                )}
+              {/* Chat Panel — Proper real-time chat */}
+              <div className="mt-2">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">💬 Communication with Client</p>
+                <ChatPanel
+                  incidentId={incident.id}
+                  incidentTitle={incident.title}
+                />
               </div>
 
-              {/* Add New Note */}
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">✍️ Add Expert Note</p>
-                <textarea
-                  rows={3}
-                  placeholder="Type your expert recommendation, containment steps, or analysis findings..."
-                  value={noteText[incident.id] || ''}
-                  onChange={e => setNoteText(n => ({ ...n, [incident.id]: e.target.value }))}
-                  className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm resize-none focus:outline-none focus:border-blue-500 transition-all mb-2"
-                />
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => handleAddNote(incident.id)}
-                    disabled={saving[incident.id]}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all"
-                  >
-                    {saving[incident.id] ? '⏳ Saving...' : '💾 Save Note'}
-                  </button>
-                  {feedback[incident.id] && (
-                    <span className="text-sm text-green-400">{feedback[incident.id]}</span>
-                  )}
-                </div>
-              </div>
 
             </div>
           ))}
