@@ -29,6 +29,7 @@ const getAssignedIncidents = async (req, res) => {
          u.name  AS reporter_name,
          u.email AS reporter_email,
          f.original_filename AS file_name,
+         f.stored_filename   AS stored_file_name,
          f.sha256_hash AS file_hash,
          mlp.threat_type AS ml_prediction,
          mlp.severity AS severity

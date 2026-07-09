@@ -131,6 +131,7 @@ const getUserIncidents = async (req, res) => {
          i.updated_at,
          u.name AS assigned_expert_name,
          f.original_filename AS file_name,
+         f.stored_filename AS stored_file_name,
          f.sha256_hash AS file_hash,
          mlp.threat_type AS ml_prediction,
          mlp.severity AS severity
@@ -142,6 +143,26 @@ const getUserIncidents = async (req, res) => {
        ORDER BY i.created_at DESC`,
       [userId]
     );
+
+    // Fetch conversation notes for each incident
+    if (rows.length > 0) {
+      const incidentIds = rows.map(r => r.id);
+      const [notes] = await pool.query(
+        `SELECT n.id, n.incident_id, n.note, n.created_at,
+                u.name AS author_name, u.role AS author_role
+         FROM incident_notes n
+         JOIN users u ON n.user_id = u.id
+         WHERE n.incident_id IN (?)
+         ORDER BY n.created_at ASC`,
+        [incidentIds]
+      );
+      const notesByIncident = {};
+      notes.forEach(n => {
+        if (!notesByIncident[n.incident_id]) notesByIncident[n.incident_id] = [];
+        notesByIncident[n.incident_id].push(n);
+      });
+      rows.forEach(r => { r.notes = notesByIncident[r.id] || []; });
+    }
 
     return res.status(200).json({ incidents: rows });
   } catch (err) {
@@ -282,6 +303,44 @@ const assignExpert = async (req, res) => {
   }
 };
 
+// ── USER ADDS NOTE / MESSAGE TO THEIR OWN INCIDENT ────────────────────────────
+
+/**
+ * addUserNote(req, res)
+ * Allows the incident owner (user) to post a message/reply on their own incident.
+ * This creates two-way communication between user and expert.
+ * Expected body: { incidentId, note }
+ */
+const addUserNote = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { incidentId, note } = req.body;
+
+    if (!incidentId || !note || note.trim() === '') {
+      return res.status(400).json({ message: 'incidentId and note are required.' });
+    }
+
+    // Verify user owns this incident
+    const [incidentRows] = await pool.query(
+      'SELECT id FROM incidents WHERE id = ? AND user_id = ?',
+      [incidentId, userId]
+    );
+    if (incidentRows.length === 0) {
+      return res.status(403).json({ message: 'Access denied. This is not your incident.' });
+    }
+
+    await pool.query(
+      'INSERT INTO incident_notes (incident_id, user_id, note) VALUES (?, ?, ?)',
+      [incidentId, userId, note.trim()]
+    );
+
+    return res.status(201).json({ message: 'Message sent successfully.' });
+  } catch (err) {
+    console.error('AddUserNote error:', err);
+    return res.status(500).json({ message: 'Server error sending message.' });
+  }
+};
+
 // ── UPDATE STATUS ──────────────────────────────────────────────────────────────
 
 /**
@@ -325,5 +384,6 @@ module.exports = {
   getAllIncidents,
   getIncidentById,
   assignExpert,
-  updateStatus
+  updateStatus,
+  addUserNote,
 };

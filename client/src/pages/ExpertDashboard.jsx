@@ -177,32 +177,63 @@ export default function ExpertDashboard() {
                 </div>
               )}
 
-              {/* Evidence Files */}
+              {/* Evidence Files + Download */}
               {incident.file_name && (
                 <div className="mb-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">📁 Evidence Files</p>
-                  <div className="bg-slate-900/50 rounded-lg p-3 mb-2 flex items-center gap-3 flex-wrap">
-                    <span className="text-slate-300 text-sm font-medium">📄 {incident.file_name}</span>
-                    <div className="w-full">
-                      <span className="text-xs text-slate-500">SHA-256: </span>
-                      <span className="font-mono text-xs text-green-400 break-all">{incident.file_hash}</span>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">📁 Evidence File</p>
+                  <div className="bg-slate-900/50 rounded-lg p-3 flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <span className="text-slate-300 text-sm font-medium">📄 {incident.file_name}</span>
+                      <div className="mt-1">
+                        <span className="text-xs text-slate-500">SHA-256: </span>
+                        <span className="font-mono text-xs text-green-400 break-all">{incident.file_hash}</span>
+                      </div>
                     </div>
+                    {incident.stored_file_name && (
+                      <a
+                        href={`http://localhost:5000/uploads/${incident.stored_file_name}`}
+                        download={incident.file_name}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all shrink-0"
+                      >
+                        ⬇️ Download File
+                      </a>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Expert Notes — Previous */}
-              {incident.notes && incident.notes.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">📝 Previous Notes</p>
-                  {incident.notes.map(note => (
-                    <div key={note.id} className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 mb-2">
-                      <p className="text-slate-300 text-sm">{note.note}</p>
-                      <p className="text-slate-500 text-xs mt-1">{new Date(note.created_at).toLocaleString()}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Communication Thread */}
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">💬 Communication Thread</p>
+                {incident.notes && incident.notes.length > 0 ? (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {incident.notes.map(note => {
+                      const isExpert = note.author_role === 'expert' || note.author_role === 'admin';
+                      return (
+                        <div key={note.id} className={`rounded-xl p-3 ${
+                          isExpert
+                            ? 'bg-blue-500/10 border border-blue-500/20 ml-4'
+                            : 'bg-slate-700/40 border border-slate-600/30 mr-4'
+                        }`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-xs font-bold ${
+                              isExpert ? 'text-blue-400' : 'text-amber-400'
+                            }`}>
+                              {isExpert ? '🔵 Expert:' : '👤 Client:'} {note.author_name}
+                            </span>
+                            <span className="text-slate-600 text-xs">{new Date(note.created_at).toLocaleString()}</span>
+                          </div>
+                          <p className="text-slate-300 text-sm">{note.note}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-slate-600 text-sm italic">No messages yet.</p>
+                )}
+              </div>
 
               {/* Add New Note */}
               <div>
