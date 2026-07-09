@@ -175,26 +175,18 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-5 py-4">
                               <div className="flex items-center gap-2 flex-wrap">
-                                {inc.expert_name ? (
-                                  <span className="text-green-400 text-xs font-semibold">
-                                    👤 {inc.expert_name}
-                                  </span>
-                                ) : (
-                                  <>
-                                    <select
-                                      defaultValue=""
-                                      onChange={e => handleAssign(inc.id, e.target.value)}
-                                      disabled={assigning[inc.id]}
-                                      className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-red-500 transition-all"
-                                    >
-                                      <option value="" disabled>Select Expert</option>
-                                      {experts.map(ex => (
-                                        <option key={ex.id} value={ex.id}>{ex.name}</option>
-                                      ))}
-                                    </select>
-                                    {assigning[inc.id] && <span className="text-yellow-400 text-xs">Assigning...</span>}
-                                  </>
-                                )}
+                                <select
+                                  value={inc.assigned_expert_id || ''}
+                                  onChange={e => handleAssign(inc.id, e.target.value)}
+                                  disabled={assigning[inc.id]}
+                                  className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-red-500 transition-all"
+                                >
+                                  <option value="" disabled>Select Expert</option>
+                                  {experts.map(ex => (
+                                    <option key={ex.id} value={ex.id}>{ex.name}</option>
+                                  ))}
+                                </select>
+                                {assigning[inc.id] && <span className="text-yellow-400 text-xs">Assigning...</span>}
                                 {feedback[inc.id] && (
                                   <span className="text-green-400 text-xs">{feedback[inc.id]}</span>
                                 )}
