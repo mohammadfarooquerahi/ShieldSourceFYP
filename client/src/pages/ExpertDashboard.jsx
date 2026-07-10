@@ -159,24 +159,64 @@ export default function ExpertDashboard() {
                 <p className="text-slate-300 text-sm leading-relaxed">{incident.description}</p>
               </div>
 
-              {/* ML Prediction Result */}
-              {incident.ml_prediction && (
-                <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 mb-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-                    🤖 ML Analysis Result
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 text-sm">
-                      <span className="text-slate-400 text-xs block">Threat Type</span>
-                      <span className="text-blue-300 font-bold">{incident.ml_prediction}</span>
+              {/* ── ML Threat Analysis ── */}
+              {incident.ml_prediction ? (
+                <div className="mb-4 rounded-xl overflow-hidden border border-slate-700">
+                  {/* Header bar */}
+                  <div className="bg-slate-900 px-4 py-2 flex items-center gap-2 border-b border-slate-700">
+                    <span className="text-lg">🤖</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Threat Analysis Result</span>
+                  </div>
+                  <div className="bg-slate-900/40 p-4 flex flex-wrap gap-3">
+                    {/* Attack Type */}
+                    <div className={`flex-1 min-w-[140px] rounded-xl p-3 border text-center ${
+                      incident.ml_prediction === 'SQL_Injection'   ? 'bg-red-500/15 border-red-500/40' :
+                      incident.ml_prediction === 'DDoS'            ? 'bg-orange-500/15 border-orange-500/40' :
+                      incident.ml_prediction === 'Brute_Force'     ? 'bg-yellow-500/15 border-yellow-500/40' :
+                      incident.ml_prediction === 'Path_Traversal'  ? 'bg-purple-500/15 border-purple-500/40' :
+                      'bg-green-500/15 border-green-500/40'
+                    }`}>
+                      <p className="text-xs text-slate-400 mb-1">⚔️ Attack Type</p>
+                      <p className={`text-lg font-black ${
+                        incident.ml_prediction === 'SQL_Injection'  ? 'text-red-400' :
+                        incident.ml_prediction === 'DDoS'           ? 'text-orange-400' :
+                        incident.ml_prediction === 'Brute_Force'    ? 'text-yellow-400' :
+                        incident.ml_prediction === 'Path_Traversal' ? 'text-purple-400' :
+                        'text-green-400'
+                      }`}>{incident.ml_prediction?.replace('_', ' ')}</p>
                     </div>
-                    <div className={`rounded-lg px-3 py-2 text-sm ${severityColor[incident.severity] || severityColor.low}`}>
-                      <span className="text-slate-400 text-xs block">Severity</span>
-                      <span className="font-bold capitalize">{incident.severity}</span>
+                    {/* Severity */}
+                    <div className={`flex-1 min-w-[120px] rounded-xl p-3 border text-center ${severityColor[incident.severity] || severityColor.low}`}>
+                      <p className="text-xs text-slate-400 mb-1">🚨 Severity</p>
+                      <p className="text-lg font-black capitalize">{incident.severity || 'N/A'}</p>
                     </div>
+                    {/* Confidence */}
+                    {incident.confidence_score && (
+                      <div className="flex-1 min-w-[120px] rounded-xl p-3 border border-blue-500/30 bg-blue-500/10 text-center">
+                        <p className="text-xs text-slate-400 mb-1">📊 Confidence</p>
+                        <p className="text-lg font-black text-blue-400">
+                          {(incident.confidence_score * 100).toFixed(0)}%
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {/* What to do hint */}
+                  <div className="bg-slate-900/60 px-4 py-2 border-t border-slate-700">
+                    <p className="text-xs text-slate-500">
+                      {incident.ml_prediction === 'SQL_Injection'  && '💡 Check database logs for unauthorized SELECT/UNION/DROP queries. Sanitize all user inputs.'}
+                      {incident.ml_prediction === 'DDoS'           && '💡 Block the high-frequency IP address. Enable rate limiting and traffic filtering on the server.'}
+                      {incident.ml_prediction === 'Brute_Force'    && '💡 Lock the targeted account. Enable CAPTCHA and multi-factor authentication immediately.'}
+                      {incident.ml_prediction === 'Path_Traversal' && '💡 Check file access logs for ../ patterns. Restrict file system access and validate all file paths.'}
+                      {incident.ml_prediction === 'Normal'         && '💡 No threat detected by AI. Review manually to confirm — may be a false alarm.'}
+                    </p>
                   </div>
                 </div>
+              ) : (
+                <div className="mb-4 rounded-xl border border-dashed border-slate-700 p-4 text-center">
+                  <p className="text-slate-500 text-sm">⏳ No AI analysis yet — file may not have been uploaded with this incident.</p>
+                </div>
               )}
+
 
               {/* Evidence Files + Download */}
               {incident.file_name && (

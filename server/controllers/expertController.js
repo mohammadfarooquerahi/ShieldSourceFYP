@@ -32,7 +32,8 @@ const getAssignedIncidents = async (req, res) => {
          f.stored_filename   AS stored_file_name,
          f.sha256_hash AS file_hash,
          mlp.threat_type AS ml_prediction,
-         mlp.severity AS severity
+         mlp.severity AS severity,
+         mlp.confidence_score AS confidence_score
        FROM incidents i
        JOIN users u ON i.user_id = u.id
        LEFT JOIN files f ON f.incident_id = i.id
