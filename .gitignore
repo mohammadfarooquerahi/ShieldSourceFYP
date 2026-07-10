@@ -19,8 +19,8 @@ ml-service/venv/
 ml-service/__pycache__/
 ml-service/**/__pycache__/
 ml-service/**/*.pyc
-ml-service/model/classifier.pkl
-ml-service/model/label_encoder.pkl
+# ml-service/model/classifier.pkl
+# ml-service/model/label_encoder.pkl
 *.pyc
 *.pyo
 *.pyd
