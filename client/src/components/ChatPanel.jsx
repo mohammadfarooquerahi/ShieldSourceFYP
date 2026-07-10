@@ -14,7 +14,7 @@ export default function ChatPanel({ incidentId, incidentTitle }) {
   const [sending,    setSending]  = useState(false);
   const [loading,    setLoading]  = useState(true);
   const [error,      setError]    = useState('');
-  const bottomRef                 = useRef(null);
+  const containerRef              = useRef(null);   // scroll inside the box only
   const pollRef                   = useRef(null);
 
   // ── Fetch messages ──────────────────────────────────────────────────────────
@@ -39,9 +39,11 @@ export default function ChatPanel({ incidentId, incidentTitle }) {
     return () => clearInterval(pollRef.current);
   }, [incidentId]);
 
-  // ── Scroll to bottom when new messages arrive ───────────────────────────────
+  // ── Scroll to bottom INSIDE chat box only (not the page) ──────────────────
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   // ── Send message ────────────────────────────────────────────────────────────
@@ -138,8 +140,9 @@ export default function ChatPanel({ incidentId, incidentTitle }) {
         </span>
       </div>
 
-      {/* Messages Thread */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
+      {/* Messages Thread — containerRef keeps scroll INSIDE this box */}
+      <div ref={containerRef}
+           className="flex-1 overflow-y-auto px-4 py-4 space-y-1"
            style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
 
         {loading && (
@@ -233,7 +236,7 @@ export default function ChatPanel({ incidentId, incidentTitle }) {
           </div>
         ))}
 
-        <div ref={bottomRef} />
+
       </div>
 
       {/* Input Area */}
