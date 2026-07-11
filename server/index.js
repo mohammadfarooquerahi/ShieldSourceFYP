@@ -19,12 +19,8 @@ const app = express();
 // Allow requests from React frontend on ANY localhost port (3001, 5173, etc.)
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow any localhost origin during development
-    if (!origin || origin.startsWith('http://localhost')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow all origins (Localhost + Vercel) for FYP
+    callback(null, true);
   },
   credentials: true
 }));
