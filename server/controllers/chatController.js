@@ -1,47 +1,45 @@
 // controllers/chatController.js
 // Handles fetching and sending chat messages for an incident
-// Both the incident owner (user) and the assigned expert can read/write
+// Uses incident_notes table columns: id, incident_id, author_id, author_name, author_role, note, created_at
 
 const pool = require('../config/db');
 
-// ── GET MESSAGES ──────────────────────────────────────────────────────────────
 // GET /api/chat/:incidentId
-// Returns all messages for the incident, with author name and role
 const getMessages = async (req, res) => {
   try {
-    const incidentId = req.params.incidentId;
-    const requesterId = req.user.id;
+    const incidentId    = req.params.incidentId;
+    const requesterId   = req.user.id;
     const requesterRole = req.user.role;
 
-    // Access control: only owner, assigned expert, or admin can read
+    // Access control: only owner, assigned expert, or admin
     if (requesterRole !== 'admin') {
       const [incRows] = await pool.query(
-        `SELECT user_id, assigned_expert_id FROM incidents WHERE id = ?`,
+        'SELECT user_id, assigned_expert_id FROM incidents WHERE id = ?',
         [incidentId]
       );
       if (incRows.length === 0)
         return res.status(404).json({ message: 'Incident not found.' });
 
-      const inc = incRows[0];
-      const isOwner   = inc.user_id === requesterId;
-      const isExpert  = inc.assigned_expert_id === requesterId;
+      const inc      = incRows[0];
+      const isOwner  = inc.user_id          === requesterId;
+      const isExpert = inc.assigned_expert_id === requesterId;
       if (!isOwner && !isExpert)
         return res.status(403).json({ message: 'Access denied.' });
     }
 
+    // Fetch messages — no JOIN needed, author info stored directly in table
     const [messages] = await pool.query(
       `SELECT
-         n.id,
-         n.incident_id,
-         n.note        AS message,
-         n.created_at,
-         u.id          AS sender_id,
-         u.name        AS sender_name,
-         u.role        AS sender_role
-       FROM incident_notes n
-       JOIN users u ON n.user_id = u.id
-       WHERE n.incident_id = ?
-       ORDER BY n.created_at ASC`,
+         id,
+         incident_id,
+         note        AS message,
+         created_at,
+         author_id   AS sender_id,
+         author_name AS sender_name,
+         author_role AS sender_role
+       FROM incident_notes
+       WHERE incident_id = ?
+       ORDER BY created_at ASC`,
       [incidentId]
     );
 
@@ -52,15 +50,13 @@ const getMessages = async (req, res) => {
   }
 };
 
-// ── SEND MESSAGE ──────────────────────────────────────────────────────────────
 // POST /api/chat/:incidentId
-// Body: { message: "text here" }
-// Both owner (user) and assigned expert (and admin) can send
 const sendMessage = async (req, res) => {
   try {
     const incidentId  = req.params.incidentId;
     const senderId    = req.user.id;
     const senderRole  = req.user.role;
+    const senderName  = req.user.name;
     const { message } = req.body;
 
     if (!message || message.trim() === '')
@@ -69,32 +65,32 @@ const sendMessage = async (req, res) => {
     // Access control
     if (senderRole !== 'admin') {
       const [incRows] = await pool.query(
-        `SELECT user_id, assigned_expert_id FROM incidents WHERE id = ?`,
+        'SELECT user_id, assigned_expert_id FROM incidents WHERE id = ?',
         [incidentId]
       );
       if (incRows.length === 0)
         return res.status(404).json({ message: 'Incident not found.' });
 
-      const inc = incRows[0];
-      const isOwner  = inc.user_id === senderId;
+      const inc      = incRows[0];
+      const isOwner  = inc.user_id          === senderId;
       const isExpert = inc.assigned_expert_id === senderId;
       if (!isOwner && !isExpert)
         return res.status(403).json({ message: 'Access denied.' });
     }
 
+    // Insert — use author_id/author_name/author_role columns (not user_id)
     const [result] = await pool.query(
-      `INSERT INTO incident_notes (incident_id, user_id, note) VALUES (?, ?, ?)`,
-      [incidentId, senderId, message.trim()]
+      `INSERT INTO incident_notes (incident_id, author_id, author_name, author_role, note)
+       VALUES (?, ?, ?, ?, ?)`,
+      [incidentId, senderId, senderName, senderRole, message.trim()]
     );
 
-    // Return the newly created message with sender info
+    // Return the newly created message
     const [newMsg] = await pool.query(
       `SELECT
-         n.id, n.incident_id, n.note AS message, n.created_at,
-         u.id AS sender_id, u.name AS sender_name, u.role AS sender_role
-       FROM incident_notes n
-       JOIN users u ON n.user_id = u.id
-       WHERE n.id = ?`,
+         id, incident_id, note AS message, created_at,
+         author_id AS sender_id, author_name AS sender_name, author_role AS sender_role
+       FROM incident_notes WHERE id = ?`,
       [result.insertId]
     );
 

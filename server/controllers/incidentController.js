@@ -6,6 +6,7 @@ const pool = require('../config/db');
 const { generateFileHash } = require('../utils/hashUtil');
 const axios = require('axios');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 // ── CREATE INCIDENT ────────────────────────────────────────────────────────────
@@ -68,10 +69,12 @@ const createIncident = async (req, res) => {
 
       // ── 3. Call ML service to classify the uploaded file ─────────────────
       try {
+        let fileContent = '';
+        try { fileContent = fs.readFileSync(req.file.path, 'utf8'); } catch(e) { fileContent = req.file.originalname; }
         const mlResponse = await axios.post(
           `${process.env.ML_SERVICE_URL}/analyze`,
-          { file_path: req.file.path, file_id: fileRecord.id },
-          { timeout: 10000 }
+          { log_content: fileContent || 'no content', file_id: fileRecord.id },
+          { timeout: 15000 }
         );
 
         // ── 4. Save ML result into ml_predictions table ─────────────────────
@@ -149,9 +152,8 @@ const getUserIncidents = async (req, res) => {
       const incidentIds = rows.map(r => r.id);
       const [notes] = await pool.query(
         `SELECT n.id, n.incident_id, n.note, n.created_at,
-                u.name AS author_name, u.role AS author_role
+                n.author_name, n.author_role
          FROM incident_notes n
-         JOIN users u ON n.user_id = u.id
          WHERE n.incident_id IN (?)
          ORDER BY n.created_at ASC`,
         [incidentIds]
@@ -287,7 +289,7 @@ const assignExpert = async (req, res) => {
     // ── Update the incident ─────────────────────────────────────────────────
     const [result] = await pool.query(
       `UPDATE incidents
-       SET assigned_expert_id = ?, status = 'assigned', updated_at = NOW()
+       SET assigned_expert_id = ?, status = 'in_progress', updated_at = NOW()
        WHERE id = ?`,
       [expertId, incidentId]
     );

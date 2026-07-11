@@ -276,14 +276,14 @@ export default function UserDashboard() {
                         <StatusBadge status={incident.status} />
                       </td>
                       <td className="px-4 py-4 text-sm text-slate-400 font-mono whitespace-nowrap">
-                        {new Date(incident.createdAt).toLocaleDateString('en-US', {
+                        {incident.created_at ? new Date(incident.created_at).toLocaleDateString('en-US', {
                           month: 'short', day: 'numeric', year: 'numeric'
-                        })}
+                        }) : null}
                       </td>
                       <td className="px-4 py-4">
-                        {incident.assignedTo ? (
+                        {incident.assigned_expert_name ? (
                           <span className="text-xs text-blue-400 font-semibold">
-                            {incident.assignedTo?.name || incident.assignedTo}
+                            {incident.assigned_expert_name}
                           </span>
                         ) : (
                           <span className="text-xs text-slate-600">Unassigned</span>
