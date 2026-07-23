@@ -105,8 +105,10 @@ const addNote = async (req, res) => {
 
     // ── Insert note into incident_notes table ───────────────────────────────
     const [result] = await pool.query(
-      'INSERT INTO incident_notes (incident_id, user_id, note) VALUES (?, ?, ?)',
-      [incidentId, expertId, note.trim()]
+      `INSERT INTO incident_notes
+       (incident_id, user_id, author_id, author_name, author_role, note)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [incidentId, expertId, expertId, req.user.name, req.user.role, note.trim()]
     );
 
     return res.status(201).json({

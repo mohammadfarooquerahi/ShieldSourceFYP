@@ -8,6 +8,7 @@ const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
 
 // ── CREATE INCIDENT ────────────────────────────────────────────────────────────
 
@@ -51,8 +52,14 @@ const createIncident = async (req, res) => {
     // ── 2. Handle file upload → insert into files table ─────────────────────
     let fileRecord = null;
     if (req.file) {
+      const uploadsRoot = path.resolve(__dirname, '..', 'uploads');
+      const resolvedUploadPath = path.resolve(req.file.path);
+      if (!resolvedUploadPath.startsWith(`${uploadsRoot}${path.sep}`)) {
+        throw new Error('Invalid uploaded file path.');
+      }
+
       // Generate SHA-256 hash for forensic integrity
-      const sha256Hash = await generateFileHash(req.file.path);
+      const sha256Hash = await generateFileHash(resolvedUploadPath);
 
       const [fileResult] = await pool.query(
         `INSERT INTO files (incident_id, original_filename, stored_filename, sha256_hash, file_size)
@@ -70,9 +77,9 @@ const createIncident = async (req, res) => {
       // ── 3. Call ML service to classify the uploaded file ─────────────────
       try {
         let fileContent = '';
-        try { fileContent = fs.readFileSync(req.file.path, 'utf8'); } catch(e) { fileContent = req.file.originalname; }
+        try { fileContent = await fs.promises.readFile(resolvedUploadPath, 'utf8'); } catch(e) { fileContent = req.file.originalname; }
         const mlResponse = await axios.post(
-          `${process.env.ML_SERVICE_URL}/analyze`,
+          `${mlServiceUrl}/analyze`,
           { log_content: fileContent || 'no content', file_id: fileRecord.id },
           { timeout: 15000 }
         );
@@ -236,11 +243,10 @@ const getIncidentById = async (req, res) => {
 
     // ── Access control ──────────────────────────────────────────────────────
     // Admin can see all. Expert can see their assigned ones. User sees only their own.
-    if (
-      role !== 'admin' &&
-      role !== 'expert' &&
-      incident.user_id !== userId
-    ) {
+    const isOwner = incident.user_id === userId;
+    const isAssignedExpert = role === 'expert' && incident.assigned_expert_id === userId;
+    const isAdmin = role === 'admin';
+    if (!isOwner && !isAssignedExpert && !isAdmin) {
       return res.status(403).json({ message: 'Access denied to this incident.' });
     }
 
@@ -316,7 +322,8 @@ const assignExpert = async (req, res) => {
 const addUserNote = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { incidentId, note } = req.body;
+    const incidentId = req.body.incidentId || req.params.id;
+    const { note } = req.body;
 
     if (!incidentId || !note || note.trim() === '') {
       return res.status(400).json({ message: 'incidentId and note are required.' });
@@ -332,8 +339,10 @@ const addUserNote = async (req, res) => {
     }
 
     await pool.query(
-      'INSERT INTO incident_notes (incident_id, user_id, note) VALUES (?, ?, ?)',
-      [incidentId, userId, note.trim()]
+      `INSERT INTO incident_notes
+       (incident_id, user_id, author_id, author_name, author_role, note)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [incidentId, userId, userId, req.user.name, req.user.role, note.trim()]
     );
 
     return res.status(201).json({ message: 'Message sent successfully.' });
@@ -357,7 +366,7 @@ const updateStatus = async (req, res) => {
     const incidentId = req.params.id;
     const { status } = req.body;
 
-    const VALID_STATUSES = ['open', 'assigned', 'in_progress', 'resolved', 'closed'];
+    const VALID_STATUSES = ['open', 'in_progress', 'resolved'];
     if (!VALID_STATUSES.includes(status)) {
       return res.status(400).json({
         message: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`

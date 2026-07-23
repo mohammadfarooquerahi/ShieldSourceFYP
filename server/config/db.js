@@ -10,8 +10,9 @@ require('dotenv').config();              // Load variables from .env file
 // The pool automatically creates new connections when needed and recycles old ones.
 const pool = mysql.createPool({
   host: process.env.DB_HOST,       // Database server host (e.g. localhost)
+  port: Number(process.env.DB_PORT) || 3306,
   user: process.env.DB_USER,       // MySQL username (e.g. root)
-  password: process.env.DB_PASS,   // MySQL password
+  password: process.env.DB_PASS || process.env.DB_PASSWORD,   // MySQL password
   database: process.env.DB_NAME,   // Database name (shield_source)
   waitForConnections: true,        // Queue queries if pool is busy
   connectionLimit: 10,             // Max 10 simultaneous connections

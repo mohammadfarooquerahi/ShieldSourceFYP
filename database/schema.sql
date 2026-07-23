@@ -123,7 +123,32 @@ CREATE TABLE IF NOT EXISTS expert_notes (
 
 
 -- ---------------------------------------------------------------------------
--- 6. ml_predictions
+-- 6. incident_notes
+--    Two-way incident communication notes/messages (user, expert, admin).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS incident_notes (
+    id           INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+    incident_id  INT UNSIGNED    NOT NULL,
+    user_id      INT UNSIGNED    NOT NULL,                         -- FK → users (author)
+    author_id    INT UNSIGNED    NULL,                             -- Denormalized snapshot for chat APIs
+    author_name  VARCHAR(120)    NULL,
+    author_role  ENUM('user', 'expert', 'admin') NULL,
+    note         TEXT            NOT NULL,
+    created_at   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    CONSTRAINT fk_incident_notes_incident
+        FOREIGN KEY (incident_id) REFERENCES incidents(id) ON DELETE CASCADE,
+    CONSTRAINT fk_incident_notes_user
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+    INDEX idx_incident_notes_incident_id (incident_id),
+    INDEX idx_incident_notes_user_id     (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ---------------------------------------------------------------------------
+-- 7. ml_predictions
 --    Stores the output of the Python ML microservice for each uploaded file.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS ml_predictions (

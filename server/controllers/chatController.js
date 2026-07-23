@@ -80,9 +80,10 @@ const sendMessage = async (req, res) => {
 
     // Insert — use author_id/author_name/author_role columns (not user_id)
     const [result] = await pool.query(
-      `INSERT INTO incident_notes (incident_id, author_id, author_name, author_role, note)
-       VALUES (?, ?, ?, ?, ?)`,
-      [incidentId, senderId, senderName, senderRole, message.trim()]
+      `INSERT INTO incident_notes
+       (incident_id, user_id, author_id, author_name, author_role, note)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [incidentId, senderId, senderId, senderName, senderRole, message.trim()]
     );
 
     // Return the newly created message
