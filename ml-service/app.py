@@ -123,6 +123,11 @@ CORS(app)
 # ---------------------------------------------------------------------------
 # Helper: run the ML pipeline on a feature dict
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# ML Execution Pipeline
+# Converts parsed log features into a 1x7 NumPy vector, executes the Random
+# Forest classifier, and extracts class confidence probabilities.
+# ---------------------------------------------------------------------------
 def _predict(features: dict) -> dict:
     """
     Convert a feature dict into a model prediction.
