@@ -1,4 +1,6 @@
 # Shield-Source 🛡️
+## About The System
+ShieldSource is an integrated cyber incident response system leveraging artificial intelligence for real-time threat detection and automated alert generation.
 ### Cybersecurity Incident Response System
 **Final Year Project (FYP) — Bachelor of Computer Science**
 
