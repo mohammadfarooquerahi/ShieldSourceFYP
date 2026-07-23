@@ -119,7 +119,7 @@ USE shield_source;
 SHOW TABLES;
 ```
 
-Expected tables: `users`, `incidents`, `files`, `expert_notes`, `ml_predictions`
+Expected tables: `users`, `incidents`, `files`, `expert_notes`, `incident_notes`, `ml_predictions`
 
 **Default accounts seeded by the schema:**
 
@@ -170,7 +170,7 @@ Start the backend:
 ```bash
 npm run dev       # Development (nodemon auto-reload)
 # or
-node server.js    # Production
+node index.js     # Production
 ```
 
 The API will be available at: `http://localhost:5000`

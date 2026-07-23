@@ -16,10 +16,11 @@ const {
 
 const { authenticate, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
+const { createIncidentLimiter } = require('../middleware/rateLimitMiddleware');
 
 // ── POST /api/incidents ───────────────────────────────────────────────────────
 // Any authenticated user can report an incident with an optional file upload
-router.post('/', authenticate, upload.single('evidence'), createIncident);
+router.post('/', createIncidentLimiter, authenticate, upload.single('evidence'), createIncident);
 
 // ── GET /api/incidents/my ─────────────────────────────────────────────────────
 // Returns only incidents submitted by the logged-in user (with notes)

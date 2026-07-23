@@ -12,6 +12,7 @@ const incidentRoutes = require('./routes/incidentRoutes');
 const expertRoutes   = require('./routes/expertRoutes');
 const adminRoutes    = require('./routes/adminRoutes');
 const chatRoutes     = require('./routes/chatRoutes');
+const mlServiceUrl   = process.env.ML_SERVICE_URL || 'http://localhost:8000';
 
 const app = express();
 
@@ -60,5 +61,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🛡️  Shield-Source API running on http://localhost:${PORT}`);
   console.log(`📁  Uploads stored at: ${path.join(__dirname, 'uploads')}`);
-  console.log(`🤖  ML Service URL: ${process.env.ML_SERVICE_URL}`);
+  console.log(`🤖  ML Service URL: ${mlServiceUrl}`);
 });
