@@ -413,6 +413,10 @@ cd client && npm run dev
 Open your browser at: **http://localhost:3000**
 
 ---
+## Local Installation
+1. Clone the repository to your local machine.
+2. Install dependencies using pip install -r requirements.txt.
+3. Run the application locally to access the ShieldSource dashboard.
 
 ## 📝 License
 
