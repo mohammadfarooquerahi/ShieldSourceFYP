@@ -121,9 +121,7 @@ export default function Home() {
 
       {/* ── FOOTER ─────────────────────────────── */}
       <footer className="py-12 px-6 border-t border-slate-800 text-center text-slate-500 text-sm">
-        <p className="text-lg font-bold text-slate-300 mb-2">🛡️ Shield-Source</p>
-        <p>FYCP/2K26/099 | BS Computer Science | University of Sindh, Jamshoro</p>
-        <p className="mt-2">Govinda Malhi • M. Farooque • Neeraj Kumar | 2026</p>
+        <p className="text-lg font-bold text-slate-300">Shield-Source 2026</p>
       </footer>
     </div>
   );
